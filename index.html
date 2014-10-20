@@ -117,13 +117,68 @@ data matrix along its rows. Of course there are many ways we might compare the
 covariance. Let's consider one somehwat coarse comparison that is particularly
 easy to analyze:
 \[
-\frac{||cov(X_k)||}{||cov(X)||},
+\frac{\|cov(X_k)\|}{\|cov(X)\|},
 \]
-where $||\cdot||$ indicates the spectral matrix norm.
+where $\|\cdot\|$ indicates the spectral matrix norm.
 
+<p>
+OK, define $\alpha(k) = (m-1)/(k-1)$ let $X = U\Sigma V^T$ be the usual singular
+value decomposition of $X$, where $U^TU = V^TV = I$, and $\Sigma$ is a diagonal
+matrix with diagonal values $\sigma_1 \ge \sigma_2 \ge \cdots \ge 0$.
+Let $U_k$ denote the conformable row sample of the $U$ matrix matching
+$X_k$. Not that although $X_k = U_k \Sigma V^T$, this is <i>not</i> an SVD
+of $X_k$ because, in general when $k \lt n$, $U_k$ is not orthonormal.
 
+<p>
+With all that we can derive the following bound:
+\begin{eqnarray}
+\frac{\|cov(X_k)\|}{\|cov(X)\|} &=& \frac{(k-1)^{-1}\|X_k^TX_k\|}{(m-1)^{-1}\|X^T X\|} \\
+&=&\alpha(k) \frac{\|V\Sigma U_k^T U_k \Sigma V^T\|}{\| V\Sigma U^T U\Sigma V^T \|}\\
+&=&\alpha(k) \frac{\|\Sigma U_k^T U_k \Sigma\|}{\|\Sigma^2\|}\\
+&=& \frac{\alpha(k)}{\sigma_1^2} \|\Sigma U_k^T U_k \Sigma \| \\
+&\le& \alpha(k) \| U_k^T U_k \|.
+\end{eqnarray}
+We use the orthonormality of $U$ and $V$ and the invariance of the spectral norm
+under matrix multiplication by orthonormal matrices above.
 
+<p>
+The function $\alpha(k)$ is pretty simple, but the norm of $U_k^T U_k$ is
+less obvious. As $k$ varies from 1 to $m$, it's monotonically non-decreasing
+between zero and 1, and its growth depends on the data and on the ratio of
+$m$ to $n$. Before exploring that in more detail, let's observe this bound
+with a simple numerical experiment to at least validate its plausibility.
 
+<pre>
+# Set up an example matrix x with sampled iid rows and known covariance structure
+v = qr.Q(qr(matrix(rnorm(100),10)))
+d = exp(-(1:10))
+sigma = v %*% diag(d) %*% t(v)
+library("mvtnorm")
+x = rmvnorm(n=500,mean=1:10,sigma=sigma)
+
+# Generate some row samples
+set.seed(1)
+i = lapply(rep(seq(from=2,to=500,by=1),1), function(j) list(j=j,idx=sample(500,j)))
+
+# Plot the ratio of row sample covariance norms to the full matrix covariance norm
+ncx = norm(cov(x),"2")
+a = t(sapply(i, function(j) c(j$j,norm(cov(x[j$idx,]),"2"))))
+plot(a[,1], a[,2]/norm(cov(x),"2"), main="Covariance norm ratio", xlab="sample size")
+
+# Our upper bound
+s = svd(x)
+alpha = t(sapply(i, function(j) c(j$j,(499/(j$j-1))*norm(crossprod(s$u[j$idx,]),"2"))))
+lines(alpha[,1],alpha[,2], col=2,lwd=2)
+</pre>
+<img src="bound.jpg" width="800" alt="bound"></img>
+
+<h2>Behavior of $\|U_k^T U\|$</h2>
+
+Write me
+
+<h2>Other covariance comparisons</h2>
+
+Write me
 
 </section>
 <section>
