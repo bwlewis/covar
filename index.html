@@ -17,9 +17,11 @@
 <section>
 <h1>
 <a name="generalized-linear-models-abridged" class="anchor" href="#notes-on-covariance"></a>
-Some notes on covariance
+Some pretty basic notes on covariance
 </h1>
 <p class="view"><a href="https://github.com/bwlewis/GLM">View the Project on GitHub &nbsp;&nbsp;  bwlewis/covar</a></p>
+<a href="mailto:michael.kane@yale.edu">Mike Kane</a>
+and
 <a href="mailto:blewis@illposed.net">Bryan W. Lewis</a>
 </section>
 <section>
@@ -29,7 +31,7 @@ Some notes on covariance
 
 We present some mostly non-statistical notes on covariance. The notes work
 towards some bounds on the proportion of overall covariance captured by subsets
-of rows of a data matrix. We're interested in that because of some relatively
+of rows of a data matrix. We're interested in that because of
 recent big data approaches that partition large data matrices along their rows.
 
 <p>
@@ -38,15 +40,92 @@ These are working notes. We'll continue to tweak and revise them.
 
 <h2>What is covariance?</h2>
 <p>
-
 Covariance is a matrix-valued function of a data matrix
 $X\in\mathbb{R}^{m\times n}$,
 $cov:\mathbb{R}^{m\times n} \rightarrow \mathbb{R}^{n\times n}$, defined as:
 \[
-cov(X) = \frac{1}{m-1}(X - e e^TX/m)^T(X - e e^TX/m),
+cov(X) = \frac{1}{m-1}\left(X - e e^TX/m\right)^T\left(X - e e^TX/m\right),
 \]
-where $e = (1,1,\ldots,1)^T\in \mathbb{R}^m$.
+where $e = (1,1,\ldots,1)^T\in \mathbb{R}^m$. The expression
+$e^TX/m$ produces a vector of column means of the matrix $X$,
+and $X - ee^TX/m$ subtracts the mean from each column, returning a so-called
+"centered" matrix with zero column means.
+<p>
+We think of the rows of the data matrix as independent observations or measurements
+of some events or things, and the columns as features or variables that we can
+measure.
 
+<p>
+We assume in this note that $m &gt; n$.
+
+<h2>I.I.D. rows and row sampling</h2>
+
+Assume that the rows of $X$ consist of $m$ independent observations of from the
+same $n$-variate probability distribution. That is, assume that the rows are
+independent and identically distributed (I.I.D.).
+
+<p>
+This means that we expect that subsets of the rows of the data matrix
+have, on average, the same column means. Small samples of rows might deviate
+from this, but in the long run the I.I.D. assumption means that these
+deviations average out. Let's illustrate this simple idea with a short
+example in R:
+
+<pre>
+library("mvtnorm")
+
+# Generate a 500x2 matrix witn known covariance structure and IID rows:
+set.seed(1)
+sigma = matrix(c(4,2,2,3), ncol=2)
+x     = rmvnorm(n=500, mean=c(1,2), sigma=sigma)
+
+colMeans(x)
+[1] 0.9492868 1.9916602
+
+# Any one small sample might deviate from this:
+colMeans(x[sample(500,20),])
+[1] 1.206864 2.494555
+
+# But, in the long run the deviations average out, even for small samples:
+apply(replicate(100, colMeans(x[sample(500,20),])), 1, mean)
+[1] 0.9520979 2.0058471
+</pre>
+
+Denote a matrix consisting of a sample of $k$ rows of $X$ by
+$X_k\in\mathbb{R}^{k\times n}$.  A more formal way of stating our observation
+about I.I.D. rows is that
+\[
+e^TX/m \approx e_k^TX_k/k,
+\]
+where $e_k = (1,1,\ldots,1)^T\in\mathbb{R}^k$.
+
+Now assume that our data matrix $X$ has already been centered and its
+column means are zero&mdash;that is, $e^TX/m=0$. Then
+\[
+cov(X) = \frac{1}{m-1}X^TX,
+\qquad \mathrm{and,} \qquad
+cov(X_k) \approx \frac{1}{k-1}X_k^TX_k.
+\]
+This note is interested in comparing $cov(X)$ with $cov(X_k)$ for various row
+sampling sizes $k$.
+
+<h2>How well does a sampling of rows of a data matrix capture the covariance of
+the full matrix?</h2>
+
+This is an interesting question for approaches that proceed by partitioning the
+data matrix along its rows. Of course there are many ways we might compare the
+covariance. Let's consider one somehwat coarse comparison that is particularly
+easy to analyze:
+\[
+\frac{||cov(X_k)||}{||cov(X)||},
+\]
+where $||\cdot||$ indicates the spectral matrix norm.
+
+
+
+
+
+</section>
 <section>
 <h2>References</h2>
 
