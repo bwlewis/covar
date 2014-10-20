@@ -58,16 +58,16 @@ measure.
 <p>
 We assume in this note that $m &gt; n$.
 
-<h2>I.I.D. rows and row sampling</h2>
+<h2>I.i.d. rows and row sampling</h2>
 
 Assume that the rows of $X$ consist of $m$ independent observations from the
 same $n$-variate probability distribution. That is, assume that the rows are
-independent and identically distributed (I.I.D.).
+independent and identically distributed (i.i.d.).
 
 <p>
 This means that we expect that subsets of the rows of the data matrix
 have, on average, the same column means. Small samples of rows might deviate
-from this, but in the long run the I.I.D. assumption means that these
+from this, but in the long run the i.i.d. assumption means that these
 deviations average out. Let's illustrate this simple idea with a short
 example in R:
 
@@ -93,7 +93,7 @@ apply(replicate(100, colMeans(x[sample(500,20),])), 1, mean)
 
 Denote a matrix consisting of a sample of $k$ rows of $X$ by
 $X_k\in\mathbb{R}^{k\times n}$.  A more formal way of stating our observation
-about I.I.D. rows is that
+about i.i.d. rows is that
 \[
 e^TX/m \approx e_k^TX_k/k,
 \]
