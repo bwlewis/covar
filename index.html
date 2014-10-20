@@ -142,11 +142,13 @@ We use the orthonormality of $U$ and $V$ and the invariance of the spectral norm
 under matrix multiplication by orthonormal matrices above.
 
 <p>
-The function $\alpha(k)$ is pretty simple, but the norm of $U_k^T U_k$ is
-less obvious. As $k$ varies from 1 to $m$, it's monotonically non-decreasing
-between zero and 1, and its growth depends on the data and on the ratio of
-$m$ to $n$. Before exploring that in more detail, let's observe this bound
-with a simple numerical experiment to at least validate its plausibility.
+
+The function $\alpha(k)$ is pretty simple, but the behavior of the norm of
+$U_k^T U_k$ is less obvious. As $k$ varies from 1 to $m$, it's monotonically
+non-decreasing between zero and 1, and its growth depends on the data and on
+the ratio of $m$ to $n$. Before exploring that in more detail, let's observe
+this bound with a simple numerical experiment to at least validate its
+plausibility.
 
 <pre>
 # Set up an example matrix x with sampled iid rows and known covariance structure
