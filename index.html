@@ -127,7 +127,8 @@ value decomposition of $X$, where $U^TU = V^TV = I$, and $\Sigma$ is a diagonal
 matrix with diagonal values $\sigma_1 \ge \sigma_2 \ge \cdots \ge 0$.
 Let $U_k$ denote the conformable row sample of the $U$ matrix matching
 $X_k$. Not that although $X_k = U_k \Sigma V^T$, this is <i>not</i> an SVD
-of $X_k$ because, in general when $k \lt m$, $U_k$ is not orthonormal.
+of $X_k$ because, in general when $k \lt m$, $U_k$ does not have
+orthonormal columns.
 
 <p>
 With all that we can derive the following bound:
@@ -138,7 +139,8 @@ With all that we can derive the following bound:
 &=& \frac{\alpha(k)}{\sigma_1^2} \|\Sigma U_k^T U_k \Sigma \| \\
 &\le& \alpha(k) \| U_k^T U_k \|.
 \end{eqnarray}
-We use the orthonormality of $U$ and $V$ and the invariance of the spectral norm
+We use the fact that $U$ has orthonormal columns, that
+$V$ is an orthonormal matrix, and that the spectral norm is invariant
 under matrix multiplication by orthonormal matrices above.
 
 <p>
