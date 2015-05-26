@@ -5,6 +5,14 @@ date: "5/25/2015"
 output: html_document
 ---
 
+This note warns about potentially misleading results when using the
+`use=pairwise.complete.obs` and `use=complete` options in R's `cor`
+and `cov` functions. The note illustrates potential issues with
+a very simple pathological example.
+
+
+## Known unknowns
+
 R includes facilities for handling missing values for all native data types. Perhaps counterintuitively, marking a value as missing conveys the information that the value is not known. Donald Rumsfeld might call it a "known unknown^[https://goo.gl/gGYcJe]." Upon encountering a missing value, we can deal with it by simply omitting it, imputing it somehow, or through several other possible approaches. R does a good job of making our choice of missing value approach explicit.
 
 The `cov` and `cor` functions in the R programming language include several options for dealing with missing data. The `use="pairwise.complete.obs"` option is particularly confusing, and can easily lead to faulty comparisons. This note explains and warns against its use.
