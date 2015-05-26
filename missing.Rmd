@@ -9,7 +9,7 @@ R includes facilities for handling missing values for all native data types. Per
 
 The `cov` and `cor` functions in the R programming language include several options for dealing with missing data. The `use="pairwise.complete.obs"` option is particularly confusing, and can easily lead to faulty comparisons. This note explains and warns against its use.
 
-Consider the following really simple example:
+Consider the following tiny example:
 ```{r}
 (x = matrix(c(-2,-1,0,1,2,1.5,2,0,1,2,NA,NA,0,1,2),5))
 ```
@@ -25,29 +25,29 @@ cor(x)
 ```
 Due to missing values in the third column of `x` we know that we don't know the covariance between `x[,3]` and anything else. Thanks to an arguably questionable^[The `cov2cor` always puts ones along the diagonal; that choice is valid only if all unknowns may assume bounded numeric values.] choice in R's `cov2cor` function, we see that `cor(x[,3],x[,3])=1`, but we don't know the correlation between `x[,3]` and the other columns.
 
-The `use="complete"` option is one reasonable alternative way to deal with missing values. It simply removes rows of the matrix `x` with one or more missing observations. Since the third through fifth rows of our example matrix
+The `use="complete"` option is one way to deal with missing values. It simply removes rows of the matrix `x` with missing observations. Since the third through fifth rows of our example matrix
 are all identical we expect perfect correlation across the board, and indeed:
 ```{r}
 cor(x, use="complete")
 ```
-is the same in our example as omitting the first two rows because they contain missing values:
-```{r}
-cor(x[3:5,])
-```
+Reasonable people might question this approach. Deleting two observations has a huge effect on the correlation between `x[,1]` and `x[,2]` in this example because those columns exhibit large variance. The result really says that we should collect more observations!
 
-The `use="pairwise.complete.obs"` is a far less reasonable way to deal with missing values. When specified, R computes correlations for each pair of columns using vectors formed by omitting rows with missing values on a case by case basis. Thus each column vector may vary depending on it's pairing, resulting in correlation values that are not even comparable. Consider our simple example again:
+## Unknown knowns
+The `use="pairwise.complete.obs"` is a less reasonable way to deal with missing values. When specified, R computes correlations for each pair of columns using vectors formed by omitting rows with missing values on a _pairwise_ basis. Thus each column vector may vary depending on it's pairing, resulting in correlation values that are not even comparable. Consider our simple example again:
 ```{r}
 cor(x, use="pairwise.complete.obs")
 ```
-By this bizarre measurement, the correlation of `x[,1]` and `x[,2]` is zero (as we saw above in the first example), and yet `cor` claims that `x[,3]` is perfectly correlated with _both_ `x[,1]` and `x[,2]`. In other words, the result is nonsense. What's going on here is that the reported correlations are not comparable because they are computed against different vectors: all of `x[,1]` and `x[,2]` are compared to each other, but only parts of `x[,1]` and `x[,2]` are compared to `x[,3]`.
+By this bizarre measurement, the correlation of `x[,1]` and `x[,2]` is zero (as we saw above in the first example), and yet `cor` claims that `x[,3]` is perfectly correlated with _both_ `x[,1]` and `x[,2]`. In other words, the result is nonsense. As Rumsfeld might say, we've converted known unknowns into unknown knowns.
 
-The bad result is obvious for our small example. But the danger here is in large matrices with lots of missing values, where it may be impossible to use the `pairwise` option in any meaningful way.
+What's going on here is that the reported correlations are not comparable because they are computed against different vectors: all of `x[,1]` and `x[,2]` are compared to each other, but only parts of `x[,1]` and `x[,2]` are compared to `x[,3]`.
+
+The bad result is obvious for our small example. But the danger here is in large matrices with lots of missing values, where it may be impossible to use the `pairwise` option in a meaningful way.
 
 ## Recommendations
 
-If you want to run correlations on lots of vectors with missing values, consider using the `use="complete"` option.
+If you want to run correlations on lots of vectors with missing values, consider simply using the R default of `use="everything"` and propagating missing values into the correlation matrix. This makes it clear what you don't know.
 
-If you really don't want to do that for some reason, consider imputing the missing values. The simplest available method replaces missing values in each column with the mean of the non-missing values in the respective column:
+If you really don't want to do that, consider imputing the missing values. The simplest available method replaces missing values in each column with the mean of the non-missing values in the respective column:
 ```{r}
 m = mean(na.omit(x[,3]))
 xi = x
