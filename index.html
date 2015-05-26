@@ -41,7 +41,7 @@ These are working notes. We'll continue to tweak and revise them.
 <h2>What is covariance?</h2>
 <p>
 Covariance is a matrix-valued function of a data matrix
-$X\in\mathbb{R}^{m\times n}$,
+$X\in\mathbb{R}^{m\times n}$, where $m &ge; n$, and
 $cov:\mathbb{R}^{m\times n} \rightarrow \mathbb{R}^{n\times n}$, defined as:
 \[
 cov(X) = \frac{1}{m-1}\left(X - e e^TX/m\right)^T\left(X - e e^TX/m\right),
@@ -54,9 +54,6 @@ and $X - ee^TX/m$ subtracts the mean from each column, returning a so-called
 We think of the rows of the data matrix as independent observations or measurements
 of some events or things, and the columns as features or variables that we can
 measure.
-
-<p>
-We assume in this note that $m &gt; n$.
 
 <h2>I.i.d. rows and row sampling</h2>
 
@@ -131,7 +128,8 @@ of $X_k$ because, in general when $k \lt m$, $U_k$ does not have
 orthonormal columns.
 
 <p>
-With all that we can derive the following bound:
+Let $\alpha(k) = \frac{m-1}{k-1}$.
+We can derive the following bound:
 \begin{eqnarray}
 \frac{\|cov(X_k)\|}{\|cov(X)\|} &\approx& \frac{(k-1)^{-1}\|X_k^TX_k\|}{(m-1)^{-1}\|X^T X\|} \\
 &=&\alpha(k) \frac{\|V\Sigma U_k^T U_k \Sigma V^T\|}{\| V\Sigma U^T U\Sigma V^T \|}\\
@@ -146,11 +144,12 @@ under matrix multiplication by orthonormal matrices above.
 <p>
 
 The function $\alpha(k)$ is pretty simple, but the behavior of the norm of
-$U_k^T U_k$ is less obvious. As $k$ varies from 1 to $m$, it's monotonically
-non-decreasing between zero and 1, and its growth depends on the data and on
-the ratio of $m$ to $n$. Before exploring that in more detail, let's observe
-this bound with a simple numerical experiment to at least validate its
-plausibility.
+$U_k^T U_k$ is less obvious. When $m=n$ it's easy to see that $\|U_k^T U_k\|=1$
+for all any row sample $k$ and the upper bound is simply $\alpha(k)$.
+When $m &gt; n$ then $\|U_k^T U_k\| &le; 1$ and is
+generally small when the number of sampled rows is small.  Before exploring
+that in more detail, let's observe this bound with a simple numerical
+experiment to at least validate its plausibility.
 
 <pre>
 # Set up an example matrix x with sampled iid rows and known covariance structure
@@ -162,7 +161,7 @@ x = rmvnorm(n=500,mean=1:10,sigma=sigma)
 
 # Generate some row samples
 set.seed(1)
-i = lapply(rep(seq(from=2,to=500,by=1),1), function(j) list(j=j,idx=sample(500,j)))
+i = lapply(seq(from=2,to=500,by=1), function(j) list(j=j,idx=sample(500,j)))
 
 # Plot the ratio of row sample covariance norms to the full matrix covariance norm
 ncx = norm(cov(x),"2")
@@ -172,7 +171,7 @@ plot(a[,1], a[,2]/norm(cov(x),"2"), main="Covariance norm ratio", xlab="sample s
 # Our upper bound
 s = svd(x)
 alpha = t(sapply(i, function(j) c(j$j,(499/(j$j-1))*norm(crossprod(s$u[j$idx,]),"2"))))
-lines(alpha[,1],alpha[,2], col=2,lwd=2)
+lines(alpha[,1],alpha[,2], col="red",lwd=2)
 </pre>
 <img src="bound.jpg" width="800" alt="bound"></img>
 
