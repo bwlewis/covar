@@ -100,7 +100,7 @@ img {
 <p>Reasonable people might question this approach. Deleting two observations has a huge effect on the correlation between <code>x[,1]</code> and <code>x[,2]</code> in this example because those columns exhibit large variance. The result really says that we should collect more observations!</p>
 <div id="unknown-knowns" class="section level2">
 <h2>Unknown knowns</h2>
-<p>The <code>use=&quot;pairwise.complete.obs&quot;</code> is a less reasonable way to deal with missing values. When specified, R computes correlations for each pair of columns using vectors formed by omitting rows with missing values on a <em>pairwise</em> basis. Thus each column vector may vary depending on it’s pairing, resulting in correlation values that are not even comparable. Consider our simple example again:</p>
+<p>The <code>use=&quot;pairwise.complete.obs&quot;</code> is an even less reasonable way to deal with missing values. When specified, R computes correlations for each pair of columns using vectors formed by omitting rows with missing values on a <em>pairwise</em> basis. Thus each column vector may vary depending on it’s pairing, resulting in correlation values that are not even comparable. Consider our simple example again:</p>
 <pre class="r"><code>cor(x, use=&quot;pairwise.complete.obs&quot;)</code></pre>
 <pre><code>##      [,1] [,2] [,3]
 ## [1,]    1    0    1
@@ -123,7 +123,7 @@ cor(xi)</code></pre>
 ## [2,] 0.0000000 1.0000000 0.8451543
 ## [3,] 0.4472136 0.8451543 1.0000000</code></pre>
 <p>This can be done really efficiently when “centering” a matrix by simply replacing missing values of the centered matrix with zero.</p>
-<p>Sometimes, it might make more sense to use a piecewise constant interpolant, sometimes referred to as “last observation carry forward” especially when dealing with time series and ordered data. In yet other cases a known default value (perhaps from a much larger population than the one under study) might be more appropriate.</p>
+<p>Sometimes it might make more sense to use a piecewise constant interpolant, referred to as “last observation carry forward” especially when dealing with time series and ordered data. In yet other cases a known default value (perhaps from a much larger population than the one under study) might be more appropriate.</p>
 <p>A more expensive approach bootstraps the missing values from the non-missing ones, either per column or from all the values if you expect them to be similarly distributed. You can decide by examining the empirical distributions of the non-missing data in each column.</p>
 <pre class="r"><code>i = is.na(x[,3])
 N = sum(i)
@@ -131,10 +131,10 @@ b = replicate(500, {x[i,3] = sample(x[!i,3], size=N, replace=TRUE);cor(x[,1:2],x
 
 # Average imputed values of cor(x[,1],x[,3]) and cor(x[,2],x[,3])
 apply(b,1,mean)</code></pre>
-<pre><code>## [1] 0.3663031 0.6810287</code></pre>
+<pre><code>## [1] 0.3654913 0.6845369</code></pre>
 <pre class="r"><code># Standard deviation of imputed values of cor(x[,1],x[,3]) and cor(x[,2],x[,3])
 apply(b,1,sd)</code></pre>
-<pre><code>## [1] 0.3358003 0.2127077</code></pre>
+<pre><code>## [1] 0.3161486 0.2118641</code></pre>
 <p>If you have lots of observations, consider partitioning them with a basic clustering algorithm first and then imputing the missing values from their respective cluster cohorts.</p>
 </div>
 <div id="references-and-packages" class="section level2">
