@@ -67,6 +67,9 @@ img {
 </div>
 
 
+<p>This note warns about potentially misleading results when using the <code>use=pairwise.complete.obs</code> and <code>use=complete</code> options in R’s <code>cor</code> and <code>cov</code> functions. The note illustrates potential issues with a very simple pathological example.</p>
+<div id="known-unknowns" class="section level2">
+<h2>Known unknowns</h2>
 <p>R includes facilities for handling missing values for all native data types. Perhaps counterintuitively, marking a value as missing conveys the information that the value is not known. Donald Rumsfeld might call it a “known unknown<a href="#fn1" class="footnoteRef" id="fnref1"><sup>1</sup></a>.” Upon encountering a missing value, we can deal with it by simply omitting it, imputing it somehow, or through several other possible approaches. R does a good job of making our choice of missing value approach explicit.</p>
 <p>The <code>cov</code> and <code>cor</code> functions in the R programming language include several options for dealing with missing data. The <code>use=&quot;pairwise.complete.obs&quot;</code> option is particularly confusing, and can easily lead to faulty comparisons. This note explains and warns against its use.</p>
 <p>Consider the following tiny example:</p>
@@ -98,6 +101,7 @@ img {
 ## [2,]    1    1    1
 ## [3,]    1    1    1</code></pre>
 <p>Reasonable people might question this approach. Deleting two observations has a huge effect on the correlation between <code>x[,1]</code> and <code>x[,2]</code> in this example mostly because of the large change in <code>x[,1]</code>. The result really says that we should collect more observations!</p>
+</div>
 <div id="unknown-knowns" class="section level2">
 <h2>Unknown knowns</h2>
 <p>The <code>use=&quot;pairwise.complete.obs&quot;</code> is an even less reasonable way to deal with missing values. When specified, R computes correlations for each pair of columns using vectors formed by omitting rows with missing values on a <em>pairwise</em> basis. Thus each column vector may vary depending on it’s pairing, resulting in correlation values that are not even comparable. Consider our simple example again:</p>
@@ -131,10 +135,10 @@ b = replicate(500, {x[i,3] = sample(x[!i,3], size=N, replace=TRUE);cor(x[,1:2],x
 
 # Average imputed values of cor(x[,1],x[,3]) and cor(x[,2],x[,3])
 apply(b,1,mean)</code></pre>
-<pre><code>## [1] 0.3449802 0.7052413</code></pre>
+<pre><code>## [1] 0.3753691 0.6977173</code></pre>
 <pre class="r"><code># Standard deviation of imputed values of cor(x[,1],x[,3]) and cor(x[,2],x[,3])
 apply(b,1,sd)</code></pre>
-<pre><code>## [1] 0.3363149 0.2117557</code></pre>
+<pre><code>## [1] 0.3255039 0.2188518</code></pre>
 <p>If you have lots of observations, consider partitioning them with a basic clustering algorithm first and then imputing the missing values from their respective cluster cohorts. Or consider a matching method or a regression-based imputation method. See the references below for many more details.</p>
 </div>
 <div id="references-and-packages" class="section level2">
