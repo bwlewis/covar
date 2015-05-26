@@ -68,7 +68,7 @@ img {
 
 
 <p>R includes facilities for handling missing values for all native data types. Perhaps counterintuitively, marking a value as missing conveys the information that the value is not known. Donald Rumsfeld might call it a “known unknown<a href="#fn1" class="footnoteRef" id="fnref1"><sup>1</sup></a>.” Upon encountering a missing value, we can deal with it by simply omitting it, imputing it somehow, or through several other possible approaches. R does a good job of making our choice of missing value approach explicit.</p>
-<p>The <code>cov</code> and <code>cor</code> functions in the R programming language include several approaches for dealing with missing data. The <code>use=&quot;pairwise.complete.obs&quot;</code> option is particularly confusing, and can easily lead to faulty comparisons. This note explains and warns against its use.</p>
+<p>The <code>cov</code> and <code>cor</code> functions in the R programming language include several options for dealing with missing data. The <code>use=&quot;pairwise.complete.obs&quot;</code> option is particularly confusing, and can easily lead to faulty comparisons. This note explains and warns against its use.</p>
 <p>Consider the following really simple example:</p>
 <pre class="r"><code>(x = matrix(c(-2,-1,0,1,2,1.5,2,0,1,2,NA,NA,0,1,2),5))</code></pre>
 <pre><code>##      [,1] [,2] [,3]
@@ -131,10 +131,10 @@ b = replicate(500, {x[i,3] = sample(x[!i,3], size=N, replace=TRUE);cor(x[,1:2],x
 
 # Average imputed values of cor(x[,1],x[,3]) and cor(x[,2],x[,3])
 apply(b,1,mean)</code></pre>
-<pre><code>## [1] 0.3727569 0.6909889</code></pre>
+<pre><code>## [1] 0.3615063 0.6901392</code></pre>
 <pre class="r"><code># Standard deviation of imputed values of cor(x[,1],x[,3]) and cor(x[,2],x[,3])
 apply(b,1,sd)</code></pre>
-<pre><code>## [1] 0.3300766 0.2104497</code></pre>
+<pre><code>## [1] 0.3354779 0.2124769</code></pre>
 <p>If you have lots of observations, consider partitioning them with a basic clustering algorithm first and then imputing the missing values from their respective cluster cohorts.</p>
 </div>
 <div id="references-and-packages" class="section level2">
