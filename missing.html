@@ -135,10 +135,10 @@ b = replicate(500, {x[i,3] = sample(x[!i,3], size=N, replace=TRUE);cor(x[,1:2],x
 
 # Average imputed values of cor(x[,1],x[,3]) and cor(x[,2],x[,3])
 apply(b,1,mean)</code></pre>
-<pre><code>## [1] 0.3753691 0.6977173</code></pre>
+<pre><code>## [1] 0.3711078 0.6948495</code></pre>
 <pre class="r"><code># Standard deviation of imputed values of cor(x[,1],x[,3]) and cor(x[,2],x[,3])
 apply(b,1,sd)</code></pre>
-<pre><code>## [1] 0.3255039 0.2188518</code></pre>
+<pre><code>## [1] 0.3323670 0.2119042</code></pre>
 <p>If you have lots of observations, consider partitioning them with a basic clustering algorithm first and then imputing the missing values from their respective cluster cohorts. Or consider a matching method or a regression-based imputation method. See the references below for many more details.</p>
 </div>
 <div id="references-and-packages" class="section level2">
@@ -154,7 +154,7 @@ apply(b,1,sd)</code></pre>
 <hr />
 <ol>
 <li id="fn1"><p><a href="https://goo.gl/gGYcJe" class="uri">https://goo.gl/gGYcJe</a><a href="#fnref1">↩</a></p></li>
-<li id="fn2"><p>The <code>cov2cor</code> always puts ones along the diagonal; that choice is valid only if all unknowns may assume bounded numeric values.<a href="#fnref2">↩</a></p></li>
+<li id="fn2"><p>The <code>cov2cor</code> function used by <code>cor</code> always puts ones along the diagonal of a correlation matrix; that choice is valid only if all unknowns may assume bounded and valid numeric values which is actually pretty reasonable. But worse and weirder than that, R is inconsistent: <code>cor(x[,3],x[,3])</code> returns <code>NA</code> (!!!!)<a href="#fnref2">↩</a></p></li>
 </ol>
 </div>
 
