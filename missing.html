@@ -77,9 +77,9 @@ img {
 ## [3,]    0  0.0    0
 ## [4,]    1  1.0    1
 ## [5,]    2  2.0    2</code></pre>
-<p>The functions <code>cov(x)</code> computes the symmetric covariance matrix <code>V</code> with entries defined by the pairwise covariance of columns of <code>x</code>,</p>
-<pre class="r"><code>V[i,j] = crossprod(x[,i] - mean(x[,i]), x[,j] - mean(x[,j])) / nrow(x)</code></pre>
-<p>where <code>i=j=c(1,2,3)</code> in this example. The function <code>cor(x)</code> similarly computes the symmetric correlation matrix with entries defined by pairwise correlation of the columns of <code>x</code>. For example:</p>
+<p>The functions <code>V=cov(x)</code> computes the symmetric covariance matrix <code>V</code> with entries defined by the pairwise covariance of columns of <code>x</code>, <span class="math">\[
+\mathsf{V}[i,j] = covariance (\mathsf{x}[,i], \,\,\,\mathsf{x}[,j]),
+\]</span> where <span class="math">\(i=j=1,2,3\)</span> in this example. The function <code>cor(x)</code> similarly computes the symmetric correlation matrix with entries defined by pairwise correlation of the columns of <code>x</code>. For example:</p>
 <pre class="r"><code>cov(x)</code></pre>
 <pre><code>##      [,1] [,2] [,3]
 ## [1,]  2.5  0.0   NA
@@ -131,10 +131,10 @@ b = replicate(500, {x[i,3] = sample(x[!i,3], size=N, replace=TRUE);cor(x[,1:2],x
 
 # Average imputed values of cor(x[,1],x[,3]) and cor(x[,2],x[,3])
 apply(b,1,mean)</code></pre>
-<pre><code>## [1] 0.3615063 0.6901392</code></pre>
+<pre><code>## [1] 0.3588351 0.6907798</code></pre>
 <pre class="r"><code># Standard deviation of imputed values of cor(x[,1],x[,3]) and cor(x[,2],x[,3])
 apply(b,1,sd)</code></pre>
-<pre><code>## [1] 0.3354779 0.2124769</code></pre>
+<pre><code>## [1] 0.3313012 0.2084445</code></pre>
 <p>If you have lots of observations, consider partitioning them with a basic clustering algorithm first and then imputing the missing values from their respective cluster cohorts.</p>
 </div>
 <div id="references-and-packages" class="section level2">
