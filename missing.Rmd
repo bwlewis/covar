@@ -1,0 +1,82 @@
+---
+title: "Pairwise-complete correlation considered dangerous"
+author: "B. W. Lewis"
+date: "5/25/2015"
+output: html_document
+---
+
+R includes facilities for handling missing values for all native data types. Perhaps counterintuitively, marking a value as missing conveys the information that the value is not known. Donald Rumsfeld might call it a "known unknown^[https://goo.gl/gGYcJe]." Upon encountering a missing value, we can deal with it by simply omitting it, imputing it somehow, or through several other possible approaches. R does a good job of making our choice of missing value approach explicit.
+
+The `cov` and `cor` functions in the R programming language include several approaches for dealing with missing data. The `use="pairwise.complete.obs"` option is particularly confusing, and can easily lead to faulty comparisons. This note explains and warns against its use.
+
+Consider the following really simple example:
+```{r}
+(x = matrix(c(-2,-1,0,1,2,1.5,2,0,1,2,NA,NA,0,1,2),5))
+```
+
+The functions `cov(x)` computes the symmetric covariance matrix `V` with entries defined by the pairwise covariance of columns of `x`,
+```{r,eval=FALSE}
+V[i,j] = cov(x[,i], x[,j])
+```
+where `i=j=c(1,2,3)` in this example. The function `cor(x)` similarly computes the symmetric correlation matrix with entries defined by pairwise correlation of the columns of `x`. For example:
+```{r}
+cov(x)
+cor(x)
+```
+Due to missing values in the third column of `x` we know that we don't know the covariance between `x[,3]` and anything else. Thanks to an arguably questionable^[The `cov2cor` always puts ones along the diagonal; that choice is valid only if all unknowns may assume bounded numeric values.] choice in R's `cov2cor` function, we see that `cor(x[,3],x[,3])=1`, but we don't know the correlation between `x[,3]` and the other columns.
+
+The `use="complete"` option is one reasonable alternative way to deal with missing values. It simply removes rows of the matrix `x` with one or more missing observations. Since the third through fifth rows of our example matrix
+are all identical we expect perfect correlation across the board, and indeed:
+```{r}
+cor(x, use="complete")
+```
+is the same in our example as omitting the first two rows because they contain missing values:
+```{r}
+cor(x[3:5,])
+```
+
+The `use="pairwise.complete.obs"` is a far less reasonable way to deal with missing values. When specified, R computes correlations for each pair of columns using vectors formed by omitting rows with missing values on a case by case basis. Thus each column vector may vary depending on it's pairing, resulting in correlation values that are not even comparable. Consider our simple example again:
+```{r}
+cor(x, use="pairwise.complete.obs")
+```
+By this bizarre measurement, the correlation of `x[,1]` and `x[,2]` is zero (as we saw above in the first example), and yet `cor` claims that `x[,3]` is perfectly correlated with _both_ `x[,1]` and `x[,2]`. In other words, the result is nonsense. What's going on here is that the reported correlations are not comparable because they are computed against different vectors: all of `x[,1]` and `x[,2]` are compared to each other, but only parts of `x[,1]` and `x[,2]` are compared to `x[,3]`.
+
+The bad result is obvious for our small example. But the danger here is in large matrices with lots of missing values, where it may be impossible to use the `pairwise` option in any meaningful way.
+
+## Recommendations
+
+If you want to run correlations on lots of vectors with missing values, consider using the `use="complete"` option.
+
+If you really don't want to do that for some reason, consider imputing the missing values. The simplest available replaces missing values in each column with the mean of the non-missing values in the respective column:
+```{r}
+m = mean(na.omit(x[,3]))
+xi = x
+xi[is.na(x)] = m
+cor(xi)
+```
+
+Sometimes, it might make more sense to use a piecewise constant interpolant, sometimes referred to as "last
+observation carry forward" especially when dealing with time series and ordered data. In yet other cases a known default value (perhaps from a much larger population than the one under study) might be more appropriate.
+
+A more expensive approach bootstraps the missing values from the non-missing ones, either per column or from all the values if you expect them to be similarly distributed. You can decide by examining the empirical distributions of the non-missing data in each column.
+```{r}
+i = is.na(x[,3])
+N = sum(i)
+b = replicate(500, {x[i,3] = sample(x[!i,3], size=N, replace=TRUE);cor(x[,1:2],x[,3])})
+
+# Average imputed values of cor(x[,1],x[,3]) and cor(x[,2],x[,3])
+apply(b,1,mean)
+# Standard deviation of imputed values of cor(x[,1],x[,3]) and cor(x[,2],x[,3])
+apply(b,1,sd)
+```
+
+If you have lots of observations, consider partitioning them with a basic clustering algorithm first and then imputing the missing values from their respective cluster cohorts.
+
+## References and packages
+
+There are of course many excellent R packages and references on missing data. I recommend consulting the following packages and references:
+
+* http://www.stat.columbia.edu/~gelman/arm/missing.pdf
+* http://cran.r-project.org/web/packages/mi/
+* http://gking.harvard.edu/amelia
+
