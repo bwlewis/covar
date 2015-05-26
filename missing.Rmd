@@ -30,7 +30,7 @@ are all identical we expect perfect correlation across the board, and indeed:
 ```{r}
 cor(x, use="complete")
 ```
-Reasonable people might question this approach. Deleting two observations has a huge effect on the correlation between `x[,1]` and `x[,2]` in this example because those columns exhibit large variance. The result really says that we should collect more observations!
+Reasonable people might question this approach. Deleting two observations has a huge effect on the correlation between `x[,1]` and `x[,2]` in this example mostly because of the large change in `x[,1]`. The result really says that we should collect more observations!
 
 ## Unknown knowns
 The `use="pairwise.complete.obs"` is an even less reasonable way to deal with missing values. When specified, R computes correlations for each pair of columns using vectors formed by omitting rows with missing values on a _pairwise_ basis. Thus each column vector may vary depending on it's pairing, resulting in correlation values that are not even comparable. Consider our simple example again:
@@ -47,7 +47,7 @@ The bad result is obvious for our small example. But the danger here is in large
 
 If you want to run correlations on lots of vectors with missing values, consider simply using the R default of `use="everything"` and propagating missing values into the correlation matrix. This makes it clear what you don't know.
 
-If you really don't want to do that, consider imputing the missing values. The simplest available method replaces missing values in each column with the mean of the non-missing values in the respective column:
+If you really don't want to do that, consider imputing the missing values. The simplest method replaces missing values in each column with the mean of the non-missing values in the respective column:
 ```{r}
 m = mean(na.omit(x[,3]))
 xi = x
@@ -59,7 +59,7 @@ This can be done really efficiently when "centering" a matrix by simply replacin
 Sometimes it might make more sense to use a piecewise constant interpolant, referred to as "last
 observation carry forward" especially when dealing with time series and ordered data. In yet other cases a known default value (perhaps from a much larger population than the one under study) might be more appropriate.
 
-A more expensive approach bootstraps the missing values from the non-missing ones, either per column or from all the values if you expect them to be similarly distributed. You can decide by examining the empirical distributions of the non-missing data in each column.
+Another basic approach bootstraps the missing values from the non-missing ones:
 ```{r}
 i = is.na(x[,3])
 N = sum(i)
@@ -71,7 +71,7 @@ apply(b,1,mean)
 apply(b,1,sd)
 ```
 
-If you have lots of observations, consider partitioning them with a basic clustering algorithm first and then imputing the missing values from their respective cluster cohorts.
+If you have lots of observations, consider partitioning them with a basic clustering algorithm first and then imputing the missing values from their respective cluster cohorts. Or consider a matching method or a regression-based imputation method. See the references below for many more details.
 
 ## References and packages
 
