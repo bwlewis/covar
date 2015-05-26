@@ -47,13 +47,14 @@ The bad result is obvious for our small example. But the danger here is in large
 
 If you want to run correlations on lots of vectors with missing values, consider using the `use="complete"` option.
 
-If you really don't want to do that for some reason, consider imputing the missing values. The simplest available replaces missing values in each column with the mean of the non-missing values in the respective column:
+If you really don't want to do that for some reason, consider imputing the missing values. The simplest available method replaces missing values in each column with the mean of the non-missing values in the respective column:
 ```{r}
 m = mean(na.omit(x[,3]))
 xi = x
 xi[is.na(x)] = m
 cor(xi)
 ```
+This can be done really efficiently when "centering" a matrix by simply replacing missing values of the centered matrix with zero.
 
 Sometimes, it might make more sense to use a piecewise constant interpolant, sometimes referred to as "last
 observation carry forward" especially when dealing with time series and ordered data. In yet other cases a known default value (perhaps from a much larger population than the one under study) might be more appropriate.
