@@ -16,7 +16,7 @@ Consider the following really simple example:
 
 The functions `cov(x)` computes the symmetric covariance matrix `V` with entries defined by the pairwise covariance of columns of `x`,
 ```{r,eval=FALSE}
-V[i,j] = cov(x[,i], x[,j])
+V[i,j] = crossprod(x[,i] - mean(x[,i]), x[,j] - mean(x[,j])) / nrow(x)
 ```
 where `i=j=c(1,2,3)` in this example. The function `cor(x)` similarly computes the symmetric correlation matrix with entries defined by pairwise correlation of the columns of `x`. For example:
 ```{r}
