@@ -31,7 +31,13 @@ where $i=j=1,2,3$ in this example. The function `cor(x)` similarly computes the 
 cov(x)
 cor(x)
 ```
-Due to missing values in the third column of `x` we know that we don't know the covariance between `x[,3]` and anything else. Thanks to an arguably questionable^[The `cov2cor` always puts ones along the diagonal; that choice is valid only if all unknowns may assume bounded numeric values.] choice in R's `cov2cor` function, we see that `cor(x[,3],x[,3])=1`, but we don't know the correlation between `x[,3]` and the other columns.
+Due to missing values in the third column of `x` we know that we don't know the
+covariance between `x[,3]` and anything else. Thanks to an arguably
+questionable^[The `cov2cor` function used by `cor` always puts ones along the
+diagonal of a correlation matrix; that choice is valid only if all unknowns may
+assume bounded and valid numeric values which is actually pretty reasonable. But worse and weirder than that, R is inconsistent: `cor(x[,3],x[,3])` returns `NA` (!!!!)] choice in R's
+`cov2cor` function, we see that `cor(x[,3],x[,3])=1`, but we don't know the
+correlation between `x[,3]` and the other columns.
 
 The `use="complete"` option is one way to deal with missing values. It simply removes rows of the matrix `x` with missing observations. Since the third through fifth rows of our example matrix
 are all identical we expect perfect correlation across the board, and indeed:
