@@ -14,11 +14,11 @@ Consider the following really simple example:
 (x = matrix(c(-2,-1,0,1,2,1.5,2,0,1,2,NA,NA,0,1,2),5))
 ```
 
-The functions `cov(x)` computes the symmetric covariance matrix `V` with entries defined by the pairwise covariance of columns of `x`,
-```{r,eval=FALSE}
-V[i,j] = crossprod(x[,i] - mean(x[,i]), x[,j] - mean(x[,j])) / nrow(x)
-```
-where `i=j=c(1,2,3)` in this example. The function `cor(x)` similarly computes the symmetric correlation matrix with entries defined by pairwise correlation of the columns of `x`. For example:
+The functions `V=cov(x)` computes the symmetric covariance matrix `V` with entries defined by the pairwise covariance of columns of `x`,
+$$
+\mathsf{V}[i,j] = covariance (\mathsf{x}[,i], \,\,\,\mathsf{x}[,j]),
+$$
+where $i=j=1,2,3$ in this example. The function `cor(x)` similarly computes the symmetric correlation matrix with entries defined by pairwise correlation of the columns of `x`. For example:
 ```{r}
 cov(x)
 cor(x)
