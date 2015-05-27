@@ -93,7 +93,7 @@ img {
 ## [1,]    1    0   NA
 ## [2,]    0    1   NA
 ## [3,]   NA   NA    1</code></pre>
-<p>Due to missing values in the third column of <code>x</code> we know that we don’t know the covariance between <code>x[,3]</code> and anything else. Thanks to an arguably questionable<a href="#fn2" class="footnoteRef" id="fnref2"><sup>2</sup></a> choice in R’s <code>cov2cor</code> function, we see that <code>cor(x[,3],x[,3])=1</code>, but we don’t know the correlation between <code>x[,3]</code> and the other columns.</p>
+<p>Due to missing values in the third column of <code>x</code> we know that we don’t know the covariance between <code>x[,3]</code> and anything else. Thanks to an arguably questionable<a href="#fn2" class="footnoteRef" id="fnref2"><sup>2</sup></a> choice in R’s <code>cov2cor</code> function, R reports that the correlation of <code>x[,3]</code> with itself is one, but we don’t know the correlation between <code>x[,3]</code> and the other columns.</p>
 <p>The <code>use=&quot;complete&quot;</code> option is one way to deal with missing values. It simply removes rows of the matrix <code>x</code> with missing observations. Since the third through fifth rows of our example matrix are all identical we expect perfect correlation across the board, and indeed:</p>
 <pre class="r"><code>cor(x, use=&quot;complete&quot;)</code></pre>
 <pre><code>##      [,1] [,2] [,3]
@@ -135,10 +135,10 @@ b = replicate(500, {x[i,3] = sample(x[!i,3], size=N, replace=TRUE);cor(x[,1:2],x
 
 # Average imputed values of cor(x[,1],x[,3]) and cor(x[,2],x[,3])
 apply(b,1,mean)</code></pre>
-<pre><code>## [1] 0.3711078 0.6948495</code></pre>
+<pre><code>## [1] 0.3589062 0.7066110</code></pre>
 <pre class="r"><code># Standard deviation of imputed values of cor(x[,1],x[,3]) and cor(x[,2],x[,3])
 apply(b,1,sd)</code></pre>
-<pre><code>## [1] 0.3323670 0.2119042</code></pre>
+<pre><code>## [1] 0.3322488 0.2134282</code></pre>
 <p>If you have lots of observations, consider partitioning them with a basic clustering algorithm first and then imputing the missing values from their respective cluster cohorts. Or consider a matching method or a regression-based imputation method. See the references below for many more details.</p>
 </div>
 <div id="references-and-packages" class="section level2">
@@ -154,7 +154,7 @@ apply(b,1,sd)</code></pre>
 <hr />
 <ol>
 <li id="fn1"><p><a href="https://goo.gl/gGYcJe" class="uri">https://goo.gl/gGYcJe</a><a href="#fnref1">↩</a></p></li>
-<li id="fn2"><p>The <code>cov2cor</code> function used by <code>cor</code> always puts ones along the diagonal of a correlation matrix; that choice is valid only if all unknowns may assume bounded and valid numeric values which is actually pretty reasonable. But worse and weirder than that, R is inconsistent: <code>cor(x[,3],x[,3])</code> returns <code>NA</code> (!!!!)<a href="#fnref2">↩</a></p></li>
+<li id="fn2"><p>The <code>cov2cor</code> function used by <code>cor</code> always puts ones along the diagonal of a correlation matrix; that choice is valid only if all unknowns may assume bounded and valid numeric values which is actually pretty reasonable. But in a rare example of inconsistency in R <code>cor(x[,3],x[,3])</code> returns <code>NA</code>. Yikes!)<a href="#fnref2">↩</a></p></li>
 </ol>
 </div>
 
