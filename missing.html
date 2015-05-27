@@ -67,7 +67,7 @@ img {
 </div>
 
 
-<p>This note warns about potentially misleading results when using the <code>use=pairwise.complete.obs</code> and <code>use=complete</code> options in R’s <code>cor</code> and <code>cov</code> functions. The note illustrates potential issues with a very simple pathological example.</p>
+<p>This note warns about potentially misleading results when using the <code>use=pairwise.complete.obs</code> and related options in R’s <code>cor</code> and <code>cov</code> functions. The note illustrates potential issues using a very simple pathological example and lists alternative approaches to handling missing data and references about them.</p>
 <div id="known-unknowns" class="section level2">
 <h2>Known unknowns</h2>
 <p>R includes facilities for handling missing values for all native data types. Perhaps counterintuitively, marking a value as missing conveys the information that the value is not known. Donald Rumsfeld might call it a “known unknown<a href="#fn1" class="footnoteRef" id="fnref1"><sup>1</sup></a>.” Upon encountering a missing value, we can deal with it by simply omitting it, imputing it somehow, or through several other possible approaches. R does a good job of making our choice of missing value approach explicit.</p>
@@ -135,10 +135,10 @@ b = replicate(500, {x[i,3] = sample(x[!i,3], size=N, replace=TRUE);cor(x[,1:2],x
 
 # Average imputed values of cor(x[,1],x[,3]) and cor(x[,2],x[,3])
 apply(b,1,mean)</code></pre>
-<pre><code>## [1] 0.3589062 0.7066110</code></pre>
+<pre><code>## [1] 0.3315713 0.7199846</code></pre>
 <pre class="r"><code># Standard deviation of imputed values of cor(x[,1],x[,3]) and cor(x[,2],x[,3])
 apply(b,1,sd)</code></pre>
-<pre><code>## [1] 0.3322488 0.2134282</code></pre>
+<pre><code>## [1] 0.3371312 0.2079182</code></pre>
 <p>If you have lots of observations, consider partitioning them with a basic clustering algorithm first and then imputing the missing values from their respective cluster cohorts. Or consider a matching method or a regression-based imputation method. See the references below for many more details.</p>
 </div>
 <div id="references-and-packages" class="section level2">
@@ -148,6 +148,7 @@ apply(b,1,sd)</code></pre>
 <li><a href="http://www.stat.columbia.edu/~gelman/arm/missing.pdf" class="uri">http://www.stat.columbia.edu/~gelman/arm/missing.pdf</a></li>
 <li><a href="http://cran.r-project.org/web/packages/mi/" class="uri">http://cran.r-project.org/web/packages/mi/</a></li>
 <li><a href="http://gking.harvard.edu/amelia" class="uri">http://gking.harvard.edu/amelia</a></li>
+<li><a href="http://cran.r-project.org/web/views/OfficialStatistics.html" class="uri">http://cran.r-project.org/web/views/OfficialStatistics.html</a> (Look for the “Imputation” section in this task view for a list of R packages.)</li>
 </ul>
 </div>
 <div class="footnotes">
