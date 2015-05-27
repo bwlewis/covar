@@ -6,9 +6,10 @@ output: html_document
 ---
 
 This note warns about potentially misleading results when using the
-`use=pairwise.complete.obs` and `use=complete` options in R's `cor`
-and `cov` functions. The note illustrates potential issues with
-a very simple pathological example.
+`use=pairwise.complete.obs` and related options in R's `cor`
+and `cov` functions. The note illustrates potential issues using
+a very simple pathological example and lists alternative approaches
+to handling missing data and references about them.
 
 
 ## Known unknowns
@@ -95,4 +96,5 @@ There are of course many excellent R packages and references on missing data. I 
 * http://www.stat.columbia.edu/~gelman/arm/missing.pdf
 * http://cran.r-project.org/web/packages/mi/
 * http://gking.harvard.edu/amelia
+* http://cran.r-project.org/web/views/OfficialStatistics.html  (Look for the "Imputation" section in this task view for a list of R packages.)
 
