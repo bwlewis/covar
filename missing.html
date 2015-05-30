@@ -94,7 +94,7 @@ img {
 ## [2,]    0    1   NA
 ## [3,]   NA   NA    1</code></pre>
 <p>Due to missing values in the third column of <code>x</code> we know that we don’t know the covariance between <code>x[,3]</code> and anything else. Thanks to an arguably questionable<a href="#fn2" class="footnoteRef" id="fnref2"><sup>2</sup></a> choice in R’s <code>cov2cor</code> function, R reports that the correlation of <code>x[,3]</code> with itself is one, but we don’t know the correlation between <code>x[,3]</code> and the other columns.</p>
-<p>The <code>use=&quot;complete&quot;</code> option is one way to deal with missing values. It simply removes rows of the matrix <code>x</code> with missing observations. Since the third through fifth rows of our example matrix are all identical we expect perfect correlation across the board, and indeed:</p>
+<p>The <code>use=&quot;complete&quot;</code> option is one way to deal with missing values. It simply removes rows of the matrix <code>x</code> with missing observations. Since the columns of the third through fifth rows of our example matrix are all identical we expect perfect correlation across the board, and indeed:</p>
 <pre class="r"><code>cor(x, use=&quot;complete&quot;)</code></pre>
 <pre><code>##      [,1] [,2] [,3]
 ## [1,]    1    1    1
@@ -135,10 +135,10 @@ b = replicate(500, {x[i,3] = sample(x[!i,3], size=N, replace=TRUE);cor(x[,1:2],x
 
 # Average imputed values of cor(x[,1],x[,3]) and cor(x[,2],x[,3])
 apply(b,1,mean)</code></pre>
-<pre><code>## [1] 0.3722048 0.6845172</code></pre>
+<pre><code>## [1] 0.3721391 0.6882251</code></pre>
 <pre class="r"><code># Standard deviation of imputed values of cor(x[,1],x[,3]) and cor(x[,2],x[,3])
 apply(b,1,sd)</code></pre>
-<pre><code>## [1] 0.3361684 0.2156523</code></pre>
+<pre><code>## [1] 0.3402169 0.2119950</code></pre>
 <p>If you have lots of observations, consider partitioning them with a basic clustering algorithm first and then imputing the missing values from their respective cluster cohorts. Or consider a matching method or a regression-based imputation method. See the references below for many more details.</p>
 </div>
 <div id="references-and-packages" class="section level2">
