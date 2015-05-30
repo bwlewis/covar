@@ -41,7 +41,7 @@ assume bounded and valid numeric values which is actually pretty reasonable. But
 the correlation of `x[,3]` with itself is one, but we don't know the
 correlation between `x[,3]` and the other columns.
 
-The `use="complete"` option is one way to deal with missing values. It simply removes rows of the matrix `x` with missing observations. Since the third through fifth rows of our example matrix
+The `use="complete"` option is one way to deal with missing values. It simply removes rows of the matrix `x` with missing observations. Since the columns of the  third through fifth rows of our example matrix
 are all identical we expect perfect correlation across the board, and indeed:
 ```{r}
 cor(x, use="complete")
