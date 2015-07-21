@@ -105,10 +105,10 @@ illustrates how to relax the unit norm and zero mean assumptions in practice.
 Let $A=U\Sigma V^T$ be the singular value decomposition of $A$, where
 $U\in\mathcal{R}^{m\times k}$, $U^TU = I$, $V\in\mathcal{R}^{n\times k}$,
 $V^TV=I$, and $\Sigma\in\mathcal{R}^{k\times k}$ is a diagonal matrix with
-diagonal entries $\sigma_1 \ge \sigma_2 \ge \cdots \ge \sigma_k > 0$. 
-For later convenience, we write $s=\mathrm{diag}(\Sigma)$ to be the
-diagonal vector of the matrix $\Sigma$.
-Denote the columns of $V$ as $V=[v_1, v_2, \ldots, v_k]$, where each
+diagonal entries $\sigma_1 \ge \sigma_2 \ge \cdots \ge \sigma_k > 0$.  For
+later convenience, we write $s=[\sigma_1, \sigma_2, \ldots, \sigma_p]^T$ to be
+the vector of the first $p\le k$ singular values along the diagonal of
+$\Sigma$.  Denote the columns of $V$ as $V=[v_1, v_2, \ldots, v_k]$, where each
 $v_j\in\mathcal{R}^n$, $j=1,2,\ldots,k$.  Then $\mathrm{cor}(A) = A^TA =
 V\Sigma^2 V^T$ is a symmetric eigenvalue decomposition of the correlation
 matrix with eigenvalues $\sigma_1^2, \sigma_2^2, \ldots, \sigma_k^2$. The span
@@ -279,7 +279,7 @@ following algorithm:
 Input: data matrix $A\in \mathcal{R}^{m\times n}$, correlation threshold $t$, maximum
 subspace dimension $p<<n$.
 \begin{enumerate}
-\item Compute the truncated SVD $AV_{1:p} = U_{1:p}s_{1:p}$, $V_{1:p} = [v_1, v_2, \ldots, v_p]$.
+\item Compute the truncated SVD $AV_{1:p} = U_{1:p}\mathrm{diag}(s_{1:p})$, $V_{1:p} = [v_1, v_2, \ldots, v_p]$.
 \item Compute permutation $P$ that orders points in $v_1$.
 \item Compute $\ell$, the longest run of successive points in $P v_1$ within the interval $\sqrt{2(1-t)}/\sigma_1$.
 \item Compute a set of candidate pairs $(\tilde{j},\tilde{j}+\tilde{i})$ with respect to the index order defined by the permutation $P$
