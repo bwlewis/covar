@@ -259,12 +259,12 @@ Note that we use the permutation $P$ defined by the order of vector $v_1$
 throughout. Including five terms reduces the total to only 11 pairs of vectors.
 In general, using $p\le k$ terms boils down to evaluating the expression
 \begin{equation}\label{proj}
-(D^1 P V_{1:p} )^2 s_{1:p}) \le 2(1-t),
+(D^1 P V_{1:p} )^2 s_{1:p}^2 \le 2(1-t),
 \end{equation}
 where 
 $V_{1:p}$ denotes the first $p$ columns of the
 matrix $V$, $s_{1:p}$ the vector of the first $p$ singular values,
-and $(D^1PV_{1:p})^2$ denotes element-wise exponentiation.
+and exponentiation is applied element-wise.
 
 Pairs of vectors beyond the correlation threshold that lie more than one index
 difference apart relative to the permutation $P$ can be similarly pruned by
@@ -279,7 +279,9 @@ following algorithm:
 Input: data matrix $A\in \mathcal{R}^{m\times n}$, correlation threshold $t$, maximum
 subspace dimension $p<<n$.
 \begin{enumerate}
-\item Compute the truncated SVD $AV_{1:p} = U_{1:p}\mathrm{diag}(s_{1:p})$, $V_{1:p} = [v_1, v_2, \ldots, v_p]$.
+\item Compute the truncated SVD $AV_{1:p} = U_{1:p}\mathrm{diag}(s_{1:p})$,
+where $V_{1:p} = [v_1, v_2, \ldots, v_p]$
+and $\mathrm{diag}(s_{1:p})$ denotes the diagonal matrix of the first $p$ singular values.
 \item Compute permutation $P$ that orders points in $v_1$.
 \item Compute $\ell$, the longest run of successive points in $P v_1$ within the interval $\sqrt{2(1-t)}/\sigma_1$.
 \item Compute a set of candidate pairs $(\tilde{j},\tilde{j}+\tilde{i})$ with respect to the index order defined by the permutation $P$
@@ -287,7 +289,7 @@ subspace dimension $p<<n$.
 \bigcup_{\tilde{i}=1}^\ell
 \left\{
 (\tilde{j},\tilde{j}+\tilde{i}) : 
-e_{\tilde{j}}^T(D^{\tilde{i}} P V_{1:p} )^2 s_{1:p} \le 2(1-t)
+e_{\tilde{j}}^T(D^{\tilde{i}} P V_{1:p} )^2 s_{1:p}^2 \le 2(1-t)
 \right\},
 \]
 where $e_{\tilde{j}}\in\mathcal{R}^n$ consists of $1$ in position $\tilde{j}$ and
