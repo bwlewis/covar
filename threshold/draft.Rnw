@@ -96,7 +96,7 @@ Consider a real-valued data matrix $A$ consisting of $m$ observations of $n$
 column vectors.  Denote the columns of $A$ as $a_j\in\mathcal{R}^m$ for
 $j=1,2,\ldots,n$, $A=[a_1, a_2, \ldots, a_n]\in\mathcal{R}^{m\times n}$, and
 let $k=\mathrm{rank}(A)$.  Assume that the mean of each column $a_j$ is zero
-and that each column has unit norm $\|a_j\|^2 = 1$. Here and below, $\|\cdot\|$
+and that each column has unit norm $\|a_j\| = 1$. Here and below, $\|\cdot\|$
 denotes the Euclidean vector norm. Then the sample correlation matrix
 $\mathrm{cor}(A)=A^TA$.  Note that under these assumptions the sample
 correlation and covariance matrices are the same.  Section \ref{irlba} below
@@ -326,7 +326,7 @@ $\ell$ matrix vector products of order $n\times p$ in step 4.
 \section{Fast truncated SVD for general matrices}\label{irlba}
 
 We have so far assumed that the mean of each column vector of $A$ is zero and
-the columns are scaled to have norm 1, but we really want a method that works
+the columns are scaled to have unit norm, but we really want a method that works
 with general matrices $A$. We've also implicitly assumed that we can
 efficiently compute a relatively low-rank truncated SVD of potentially
 large  matrices required by step 1 of Algorithm \ref{prune}.  Fortunately,
