@@ -88,7 +88,7 @@ can efficiently compute thresholded subsets of very large correlation matrices.
 
 \section{Introduction}\label{intro}
 
-XXX add discussion of applications (especially genomics?) and previous work,
+XXX add discussion of applications (genomics?) and previous work,
 then on to the preliminaries:
 \[\]
 
@@ -106,7 +106,7 @@ Let $A=U\Sigma V^T$ be the singular value decomposition of $A$, where
 $U\in\mathcal{R}^{m\times k}$, $U^TU = I$, $V\in\mathcal{R}^{n\times k}$,
 $V^TV=I$, and $\Sigma\in\mathcal{R}^{k\times k}$ is a diagonal matrix with
 diagonal entries $\sigma_1 \ge \sigma_2 \ge \cdots \ge \sigma_k > 0$.  For
-later convenience, we write $s=[\sigma_1, \sigma_2, \ldots, \sigma_p]^T$ to be
+later convenience, we write $s_{1:p}=[\sigma_1, \sigma_2, \ldots, \sigma_p]^T$ to be
 the vector of the first $p\le k$ singular values along the diagonal of
 $\Sigma$.  Denote the columns of $V$ as $V=[v_1, v_2, \ldots, v_k]$, where each
 $v_j\in\mathcal{R}^n$, $j=1,2,\ldots,k$.  Then $\mathrm{cor}(A) = A^TA =
@@ -129,7 +129,7 @@ $A$. Then
 \end{equation}
 In particular, for a given correlation threshold $t$, $0<t<1$, pairs
 of vectors $a_i$ and $a_j$ such that $\|a_i - a_j\|^2 > 2(1-t)$ lie
-outside the correlation threshold.
+below the correlation threshold.
 \end{lemma}
 \begin{proof} (XXX perhaps omit this)
 \begin{eqnarray*}
@@ -227,7 +227,7 @@ data(BicatYeast)
 A=t(BicatYeast)
 s=svd(A)
 i=order(s$v[,1])
-plot(s$v[i,1], ylab=expression(Pi * v[1]), xlab="Sorted index", pch='.')
+plot(s$v[i,1], ylab=expression(P * v[1]), xlab="Sorted index", pch='.')
 t=0.99
 abline(h=c(-0.05,-0.05+sqrt(2*(1-t))/s$d[1]),col=2,lwd=0.5)
 @
@@ -236,37 +236,42 @@ abline(h=c(-0.05,-0.05+sqrt(2*(1-t))/s$d[1]),col=2,lwd=0.5)
 \end{figure}
 
 Let $D^i\in\mathcal{R}^{n-i, n}$, $i=1,2,\ldots,n-1$, be the $i$th order finite
-difference matrix with diagonal entries $-1$, $i$th super-diagonal entries $1$,
-and zeros elsewhere.  Consider just adjacent points of $P v_1$.  Then $D^1P
-v_1$ consists of the differences of adjacent entries in $P v_1$.  Entries
-such that $\sigma_1^2 (D^1 P v_1)^2 > 2(1-t)$, where the exponentiation is
-applied element-wise, correspond to pairs of vectors that do not meet
-the correlation threshold. This is unlikely to rule out many pairs of vectors
-in most problems. For example, the minimum distance between the points shown in
+difference matrix with $-1$ along the diagonal, $1$ along the $i$th
+super-diagonal, and zeros elsewhere.  Consider just adjacent points of $P v_1$.
+Then $D^1P v_1$ consists of the differences of adjacent entries in $P v_1$.
+Entries such that $\sigma_1^2 (D^1 P v_1)^2 > 2(1-t)$
+correspond to pairs of vectors that do not meet the correlation threshold,
+(exponentiation is applied to the vector element-wise).
+However, this observation is unlikely to rule out many pairs of vectors in
+most problems. For example, the minimum distance between the points shown in
 the example in Figure \ref{fig1} is less that $\sqrt{2(1-t)}/\sigma$, and no
 pruning at all occurs.
 
 Including more terms from Equation \ref{vdist} increases our ability to prune
-pairs of vectors outside the correlation threshold. For example, including
-only one more term finds that only 116 out of 418 pairs of adjacent vectors
-in the example shown in Figure \ref{fig1} satisfy
+pairs of vectors below the correlation threshold. For example, including
+only one more term finds that 72\% of adjacent vectors fall below the
+correlation threshold
+in the example shown in Figure \ref{fig1} and are pruned by identifying
+indices such that
 \[
 \sigma_1^2 (D^1 P v_1)^2 +
-\sigma_2^2 (D^1 P v_2)^2 \le 2(1-t),
+\sigma_2^2 (D^1 P v_2)^2 > 2(1-t),
 \]
 where exponentiation is applied element-wise to the vectors.
 Note that we use the permutation $P$ defined by the order of vector $v_1$
-throughout. Including five terms reduces the total to only 11 pairs of vectors.
-In general, using $p\le k$ terms boils down to evaluating the expression
+throughout. Including five terms prunes over 97\% of adjacent vector pairs,
+leaving only 11 candidate pairs of adjacent vectors.
+In general, using $p\le k$ terms to prune pairs of vectors below the
+correlation threshold boils down to evaluating the expression
 \begin{equation}\label{proj}
-(D^1 P V_{1:p} )^2 s_{1:p}^2 \le 2(1-t),
+(D^1 P V_{1:p} )^2 s_{1:p}^2 > 2(1-t),
 \end{equation}
 where 
 $V_{1:p}$ denotes the first $p$ columns of the
 matrix $V$, $s_{1:p}$ the vector of the first $p$ singular values,
-and exponentiation is applied element-wise.
+and exponentiation is applied to vectors element-wise.
 
-Pairs of vectors beyond the correlation threshold that lie more than one index
+Pairs of vectors below the correlation threshold that lie more than one index
 difference apart relative to the permutation $P$ can be similarly pruned by
 replacing $D^1$ with $D^j$, $j=1,2,\ldots,\ell$ in the above expressions.
 Following this procedure, we can produce a well-pruned candidate set of
@@ -284,7 +289,7 @@ where $V_{1:p} = [v_1, v_2, \ldots, v_p]$
 and $\mathrm{diag}(s_{1:p})$ denotes the diagonal matrix of the first $p$ singular values.
 \item Compute permutation $P$ that orders points in $v_1$.
 \item Compute $\ell$, the longest run of successive points in $P v_1$ within the interval $\sqrt{2(1-t)}/\sigma_1$.
-\item Compute a set of candidate pairs $(\tilde{j},\tilde{j}+\tilde{i})$ with respect to the index order defined by the permutation $P$
+\item Compute a set of candidate pairs $(\tilde{j},\tilde{j}+\tilde{i})$ with respect to the index order defined by the permutation $P$ that possibly meet the correlation threshold
 \[
 \bigcup_{\tilde{i}=1}^\ell
 \left\{
@@ -296,7 +301,7 @@ where $e_{\tilde{j}}\in\mathcal{R}^n$ consists of $1$ in position $\tilde{j}$ an
 zeros otherwise.
 \item If there are judged to be  ``too many'' candidate pairs, increase $p$ and go to
 step 1. Continue to increase $p$ in this way until the number of candidate
-pairs stops decreasing.
+pairs stops decreasing (the best this algorithm can do).
 \item Recover the non-permuted candidate column vector
 indices $(j,i)$ from $j=e_{\tilde{j}}^T Pq$ and $i=e_{\tilde{j}+\tilde{i}}^TPq$ for every
 pair $(\tilde{j},\tilde{j} + \tilde{i})$ in step 4, where
@@ -313,7 +318,7 @@ projection $\tilde{i}=1$ in step 4 of the algorithm.
 Algorithm \ref{prune} by construction guarantees that no pruned vector pair
 meets the given correlation threshold; that is, the pruning can not produce any
 ``false negatives.''  The algorithm typically prunes the vast majority of pairs
-of vectors outside the correlation threshold with truncated singular value
+of vectors below the correlation threshold with truncated singular value
 decompositions of only relatively low dimension $p$.  The choice of $p$ is a
 balance between work in computing a truncated SVD and work required by the
 $\ell$ matrix vector products of order $n\times p$ in step 4.
@@ -323,17 +328,18 @@ $\ell$ matrix vector products of order $n\times p$ in step 4.
 We have so far assumed that the mean of each column vector of $A$ is zero and
 the columns are scaled to have norm 1, but we really want a method that works
 with general matrices $A$. We've also implicitly assumed that we can
-efficiently compute a relatively low-dimensional truncated SVD of potentially
+efficiently compute a relatively low-rank truncated SVD of potentially
 large  matrices required by step 1 of Algorithm \ref{prune}.  Fortunately,
 both needs are met by one algorithm.
 
-The augmented, implicitly restarted Lanczos bidiagonalization (IRLBA) method of
-Baglama and Reichel \cite{br} efficiently computes truncated singular value
+The augmented, implicitly restarted Lanczos bidiagonalization algorithm (IRLBA)
+of Baglama and Reichel \cite{br} efficiently computes truncated singular value
 decompositions of large dense or sparse matrices. Reference implementations are
 available for R\cite{irlba-R}, Matlab\cite{irlba-M}, and Python\cite{irlba-P}.
 The R implementation includes efficient methods for re-starting the algorithm
 to increase the subspace dimension (see step 5 of Algorithm \ref{prune}), and
-efficient methods for computing the SVD of scaled and centered matrices.
+efficient methods for computing the SVD of scaled and centered matrices without
+explicitly forming a new matrix.
 
 \section{Numerical experiments}\label{examples}
 
