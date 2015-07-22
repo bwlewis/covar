@@ -131,7 +131,7 @@ In particular, for a given correlation threshold $t$, $0<t<1$, pairs
 of vectors $a_i$ and $a_j$ such that $\|a_i - a_j\|^2 > 2(1-t)$ lie
 below the correlation threshold.
 \end{lemma}
-\begin{proof} (XXX perhaps omit this)
+\begin{proof} (XXX probably omit this)
 \begin{eqnarray*}
 \|a_i - a_j\|^2 &=& (a_i - a_j)^T(a_i - a_j) \\
 &=& a_i^T a_i + a_j^T a_j - 2a_i^T a_j \\
@@ -324,35 +324,41 @@ $\ell$ matrix vector products of order $n\times p$ in step 4.
 
 \section{Fast truncated SVD for general matrices}\label{irlba}
 
-We have so far assumed that the mean of each column vector of $A$ is zero and
-the columns are scaled to have unit norm, but we really want a method that works
-with general matrices $A$. We've also implicitly assumed that we can
-efficiently compute a relatively low-rank truncated SVD of potentially
-large  matrices required by step 1 of Algorithm \ref{prune}.  Fortunately,
-both needs are met by one algorithm.
+We have so far assumed that the mean of each column vector of the $m\times n$
+matrix $A$ is zero and the columns are scaled to have unit norm, but we really
+want a method that works with general matrices $A$. We've also implicitly
+assumed that we can efficiently compute a relatively low-rank truncated SVD of
+potentially large  matrices required by step 1 of Algorithm \ref{prune}.
+Fortunately, both needs are met by one algorithm.
 
 The augmented implicitly restarted Lanczos bidiagonalization algorithm (IRLBA)
 of Baglama and Reichel \cite{br} efficiently computes truncated singular value
 decompositions of large dense or sparse matrices. Reference implementations are
 available for R\cite{irlba-R}, Matlab\cite{irlba-M}, and Python\cite{irlba-P}.
-The R implementation includes efficient methods for re-starting the algorithm
+The R implementation includes easy to use and efficient methods for restarting
 to increase the subspace dimension (see step 5 of Algorithm \ref{prune}), and
-efficient methods for computing the SVD of scaled and centered matrices without
-explicitly forming a new matrix.
+for computing the SVD of scaled and centered matrices without explicitly
+forming a new matrix.
 
-Let $x\in\mathcal{R}^n$ represent the vector of column means of the matrix $A$,
-$W\in\mathcal{R}^{n\times n}$ be a diagonal matrix with the reciprocal of the
-column norms of $A$ along the diagonal, and let $e\in\mathcal{R}^m$ be a vector
-of all ones. Then $(A - ex^T)W$ is a centered matrix with zero column means,
-and scaled to have unit column norms, and
+We relax the column mean and scale assumptions without much additional
+computational or storage overhead as follows.  Let
+$x=[x_1,x_2,\ldots,x_n]\in\mathcal{R}^n$ represent the vector of column means
+of the matrix $A$, $w=[w_1^2,w_2^2,\ldots,w_n^2]\in\mathcal{R}^n$ be the vector
+of squared column norms of $A$, and $W\in\mathcal{R}^{n\times n}$ a diagonal
+matrix with diagonal entries $1/\sqrt{w_i^2 - m x_i^2}$.  Let
+$e\in\mathcal{R}^m$ be a vector of all ones.  Then $(A - ex^T)W$ is a centered
+matrix with zero column means, and scaled to have unit column norms, and
+\[
+\mathrm{cor}(A) = W^T (A-ex^T)^T (A-ex^T) W.
+\]
+IRLBA, based on the Lanczos process, is a method of iterated matrix-vector
+products. The main idea behind efficient application of IRLBA to correlation
+problems replaces matrix-vector products of the form $Az$ with $AWz - ex^TWz$ in
+the iterations, implicitly working with a scaled and centered matrix without
+forming it.  This comes at the cost of storing two additional length $n$ vectors and
+computing two additional vector inner products per matrix-vector product.
 
-XXX
 
-IRLBA, based on the Lanczos process, is an iterative method based on
-matrix-vector products involving the matrix $A$.
-
-
-XXX scaling/centering discussion and example
 
 \section{Numerical experiments}\label{examples}
 
