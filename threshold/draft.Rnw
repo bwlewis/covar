@@ -88,7 +88,8 @@ can efficiently compute thresholded subsets of very large correlation matrices.
 
 \section{Introduction}\label{intro}
 
-XXX add discussion of applications (genomics?) and previous work,
+XXX add discussion of applications (genomics?) and previous work (in particular
+\cite{latj} and \cite{bhpt} are related but different),
 then on to the preliminaries:
 \[\]
 
@@ -116,10 +117,10 @@ The span of the columns of $V$ form an orthonormal basis of the range of the
 correlation matrix $A^TA$.
 
 Let $a_i$ and $a_j$, $1\le i,j\le n$ be any two columns of the matrix $A$
-(including possibly the case $i=j$). Denote the correlation of these two vectors
-by $\mathrm{cor}(a_i,a_j) = a_j^T a_i$.  The following simple lemma
-from Rafiei\cite{raf} establishes a relationship between correlation and
-Euclidean distance between two vectors.
+(including possibly the case $i=j$). Denote the correlation of these two
+vectors by $\mathrm{cor}(a_i,a_j) = a_j^T a_i$.  The following simple lemma
+establishes a relationship between correlation and Euclidean distance between
+two vectors.
 
 \begin{lemma}
 Let $a_i$ and $a_j$, $1\le i,j\le n$ be any two columns of the matrix
@@ -374,11 +375,15 @@ computing two additional vector inner products per matrix-vector product.
 \section{Conclusion}\label{conclusion}
 
 
-%% XXX switch to bibtex
+%% XXX switch to bibtex / make citations uniform
 
 \begin{thebibliography}{99}
 \bibitem{br}
-Baglama, J. and Reichel, L., Augmented Implicitly Restarted Lanczos Bidiagonalization Methods, SIAM J. Sci. Comput. 2005.
+Baglama, J. and Reichel, L., Augmented Implicitly Restarted Lanczos Bidiagonalization Methods, SIAM J. Sci. Comput., 2005.
+\bibitem{bhpt}
+Bair, E., Hastie, T., Paul, D.., and Tibshirani, P., Prediction by supervised principal components, Journal of the American Statistical Association 101, no. 473, 2006.
+\bibitem{latj}
+Levin, Asriel U., Todd K. Leen, and John E. Moody. Fast pruning using principal components. (1993).
 \bibitem{mnl}
 Mueen, A., Nath, S., and Liu, J., Fast approximate correlation for
 massive time-series data, in Proceedings of the 2010 ACM SIGMOD International
