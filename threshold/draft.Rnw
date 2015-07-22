@@ -161,7 +161,7 @@ $A$. Then
 \sigma_k^2 |v_{ki} - v_{kj}|^2,
 \end{equation}
 where $v_{kj}$ denotes the $jth$ position in the vector $v_k$ (that is, the
-$[k,j]$ entry in the matrix $V$).
+$[j,k]$ entry in the matrix $V$).
 \end{lemma}
 
 %%\begin{proof}
@@ -195,8 +195,8 @@ In practice, many pairs of vectors may be ruled out in this fashion by
 inspecting distances in low-dimensional subspaces, substantially reducing the
 complexity of computing thresholded correlation matrices.  Approaches that
 cheaply omit pairs of vectors from consideration are called \emph{pruning
-methods}, and a variety pruning methods have been described elsewhere for the
-thresholded correlation problem; see, for example\cite{zf,mnl} and the
+methods}, and a variety of pruning methods have been described elsewhere for
+the thresholded correlation problem; see, for example\cite{zf,mnl} and the
 references therein.  The approach described here prunes along an intuitive path
 of decreasing variance defined by the data and computed by the SVD.
 
@@ -219,7 +219,6 @@ that paris of indices corresponding to correlated vectors above the threshold
 can exhibit.
 
 \begin{figure}[!ht]
-\label{fig1}
 \begin{center}
 <<eval=TRUE, echo=FALSE, fig=TRUE, height=5, width=7>>=
 library(biclust)
@@ -231,7 +230,10 @@ plot(s$v[i,1], ylab=expression(P * v[1]), xlab="Sorted index", pch='.')
 t=0.99
 abline(h=c(-0.05,-0.05+sqrt(2*(1-t))/s$d[1]),col=2,lwd=0.5)
 @
-\caption{Example plot of the ordered entries of $v_1$ for the BicatYeast example from Section \ref{examples}. The red lines illustrate the interval corresponding threshold $t=0.99$. Points farther apart than this interval correspond to column vectors that do not meet the correlation threshold.}
+\caption{
+Example plot of the ordered entries of $v_1$ for the BicatYeast example from Section \ref{examples}. The red lines illustrate the interval corresponding threshold $t=0.99$. Points farther apart than this interval correspond to column vectors that do not meet the correlation threshold.
+\label{fig1}
+}
 \end{center}
 \end{figure}
 
@@ -239,12 +241,12 @@ Let $D^i\in\mathcal{R}^{n-i, n}$, $i=1,2,\ldots,n-1$, be the $i$th order finite
 difference matrix with $-1$ along the diagonal, $1$ along the $i$th
 super-diagonal, and zeros elsewhere.  Consider just adjacent points of $P v_1$.
 Then $D^1P v_1$ consists of the differences of adjacent entries in $P v_1$.
-Entries such that $\sigma_1^2 (D^1 P v_1)^2 > 2(1-t)$
-correspond to pairs of vectors that do not meet the correlation threshold,
-(exponentiation is applied to the vector element-wise).
-However, this observation is unlikely to rule out many pairs of vectors in
-most problems. For example, the minimum distance between the points shown in
-the example in Figure \ref{fig1} is less that $\sqrt{2(1-t)}/\sigma$, and no
+Entries such that $\sigma_1^2 (D^1 P v_1)^2 > 2(1-t)$ correspond to pairs of
+vectors that do not meet the correlation threshold, where here and below
+exponentiation applied to a vector denotes element-wise exponentiation.
+However, this observation is unlikely to rule out many pairs of vectors in most
+problems. For example, the minimum distance between the points shown in the
+example in Figure \ref{fig1} is less that $\sqrt{2(1-t)}/\sigma_1$, and no
 pruning at all occurs.
 
 Including more terms from Equation \ref{vdist} increases our ability to prune
@@ -255,9 +257,8 @@ in the example shown in Figure \ref{fig1} and are pruned by identifying
 indices such that
 \[
 \sigma_1^2 (D^1 P v_1)^2 +
-\sigma_2^2 (D^1 P v_2)^2 > 2(1-t),
+\sigma_2^2 (D^1 P v_2)^2 > 2(1-t).
 \]
-where exponentiation is applied element-wise to the vectors.
 Note that we use the permutation $P$ defined by the order of vector $v_1$
 throughout. Including five terms prunes over 97\% of adjacent vector pairs,
 leaving only 11 candidate pairs of adjacent vectors.
@@ -268,8 +269,7 @@ correlation threshold boils down to evaluating the expression
 \end{equation}
 where 
 $V_{1:p}$ denotes the first $p$ columns of the
-matrix $V$, $s_{1:p}$ the vector of the first $p$ singular values,
-and exponentiation is applied to vectors element-wise.
+matrix $V$, $s_{1:p}$ the vector of the first $p$ singular values.
 
 Pairs of vectors below the correlation threshold that lie more than one index
 difference apart relative to the permutation $P$ can be similarly pruned by
