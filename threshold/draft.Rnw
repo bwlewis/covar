@@ -88,8 +88,9 @@ can efficiently compute thresholded subsets of very large correlation matrices.
 
 \section{Introduction}\label{intro}
 
-XXX add discussion of applications (genomics?) and previous work (in particular
-\cite{latj} and \cite{bhpt} are related but different),
+XXX add discussion of applications (genomics?) and previous work (especially
+\cite{xstk1},\cite{xstk2} and
+related but different work that use PCA: \cite{latj} and \cite{bhpt} are related but different),
 then on to the preliminaries:
 \[\]
 
@@ -197,9 +198,10 @@ inspecting distances in low-dimensional subspaces, substantially reducing the
 complexity of computing thresholded correlation matrices.  Approaches that
 cheaply omit pairs of vectors from consideration are called \emph{pruning
 methods}, and a variety of pruning methods have been described elsewhere for
-the thresholded correlation problem; see, for example\cite{zf,mnl} and the
-references therein.  The approach described here prunes along an intuitive path
-of decreasing variance defined by the data and computed by the SVD.
+the thresholded correlation problem; see, for example\cite{xstk1,xstk2,zf,mnl}
+and the references therein.  The approach described here prunes along an
+intuitive path of decreasing variance defined by the data and computed by the
+SVD.
 
 \section{Efficient pruning using the truncated SVD}
 
@@ -388,9 +390,10 @@ Levin, Asriel U., Todd K. Leen, and John E. Moody. Fast pruning using principal 
 Mueen, A., Nath, S., and Liu, J., Fast approximate correlation for
 massive time-series data, in Proceedings of the 2010 ACM SIGMOD International
 Conference on Management of data, 2010, pp. 171-182.
-\bibitem{raf}
-Rafiei, D., On similarity-based queries for time series data,
-in Data Engineering Proceedings., IEEE, 1999.
+\bibitem{xstk1}
+Xiong, Hui, et al. "Exploiting a support-based upper bound of Pearson's correlation coefficient for efficiently identifying strongly correlated pairs." Proceedings of the tenth ACM SIGKDD international conference on Knowledge discovery and data mining. ACM, 2004.
+\bibitem{xstk2}
+Xiong, Hui, et al. "TAPER: A two-step approach for all-strong-pairs correlation query in large databases." Knowledge and Data Engineering, IEEE Transactions on 18.4 (2006): 493-508.
 \bibitem{zf}
 Zhang, J. and Feigenbaum, J, Finding Highly Correlated Pairs Efficiently with Powerful Pruning,
 in Proceedings of ACM Conference on Information and Knowledge Management (CIKM), 2006, pp. 152-161.
