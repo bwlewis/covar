@@ -19,7 +19,7 @@ require(zoo)   # for rollapply
 tcor = function(A, t=0.99, p=5)
 {
   mu = colMeans(A)
-  s  = sqrt(apply(A,2,crossprod))
+  s  = sqrt(apply(A,2,crossprod) - nrow(A)*mu^2) # column norms of centered matrix
   L  = irlba(A, p, center=mu, scale=s)
   P  = order(L$v[,1])  # order the entries of v1 (the permutation in the paper)
   limit = sqrt(2*(1-t))/L$d[1]

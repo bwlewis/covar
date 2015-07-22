@@ -106,14 +106,14 @@ Let $A=U\Sigma V^T$ be the singular value decomposition of $A$, where
 $U\in\mathcal{R}^{m\times k}$, $U^TU = I$, $V\in\mathcal{R}^{n\times k}$,
 $V^TV=I$, and $\Sigma\in\mathcal{R}^{k\times k}$ is a diagonal matrix with
 diagonal entries $\sigma_1 \ge \sigma_2 \ge \cdots \ge \sigma_k > 0$.  For
-later convenience, we write $s_{1:p}=[\sigma_1, \sigma_2, \ldots, \sigma_p]^T$ to be
-the vector of the first $p\le k$ singular values along the diagonal of
+later convenience, we write $s_{1:p}=[\sigma_1, \sigma_2, \ldots, \sigma_p]^T$
+to be the vector of the first $p\le k$ singular values along the diagonal of
 $\Sigma$.  Denote the columns of $V$ as $V=[v_1, v_2, \ldots, v_k]$, where each
 $v_j\in\mathcal{R}^n$, $j=1,2,\ldots,k$.  Then $\mathrm{cor}(A) = A^TA =
 V\Sigma^2 V^T$ is a symmetric eigenvalue decomposition of the correlation
-matrix with eigenvalues $\sigma_1^2, \sigma_2^2, \ldots, \sigma_k^2$. The span
-of the columns of $V$ form an orthonormal basis of the range of the correlation
-matrix $A^TA$.
+matrix with nonzero eigenvalues $\sigma_1^2, \sigma_2^2, \ldots, \sigma_k^2$.
+The span of the columns of $V$ form an orthonormal basis of the range of the
+correlation matrix $A^TA$.
 
 Let $a_i$ and $a_j$, $1\le i,j\le n$ be any two columns of the matrix $A$
 (including possibly the case $i=j$). Denote the correlation of these two vectors
@@ -203,8 +203,8 @@ of decreasing variance defined by the data and computed by the SVD.
 \section{Efficient pruning using the truncated SVD}
 
 Let $t$ be a given correlation threshold $0<t<1$, and let
-$P\in\mathcal{R}^{n\times n}$ be a permutation that orders then entries of
-$v_1$ in increasing order.  It follows from Equations \ref{cordist} and
+$P\in\mathcal{R}^{n\times n}$ be a permutation matrix that orders then entries
+of $v_1$ in increasing order.  It follows from Equations \ref{cordist} and
 \ref{vdist} that for any $i,j=1,2,\ldots,n$, if $\sigma_1^2 |v_{1i} - v_{1j}|^2
 \ge 2(1-t)$ then the column vectors $a_j$ and $a_i$ do not meet the correlation
 threshold.  Let $\ell$ be the longest run of successive points in $P v_1$
@@ -243,25 +243,25 @@ super-diagonal, and zeros elsewhere.  Consider just adjacent points of $P v_1$.
 Then $D^1P v_1$ consists of the differences of adjacent entries in $P v_1$.
 Entries such that $\sigma_1^2 (D^1 P v_1)^2 > 2(1-t)$ correspond to pairs of
 vectors that do not meet the correlation threshold, where here and below
-exponentiation applied to a vector denotes element-wise exponentiation.
+an exponent applied to a vector denotes element-wise exponentiation.
 However, this observation is unlikely to rule out many pairs of vectors in most
 problems. For example, the minimum distance between the points shown in the
 example in Figure \ref{fig1} is less that $\sqrt{2(1-t)}/\sigma_1$, and no
 pruning at all occurs.
 
 Including more terms from Equation \ref{vdist} increases our ability to prune
-pairs of vectors below the correlation threshold. For example, including
-only one more term finds that 72\% of adjacent vectors fall below the
-correlation threshold
-in the example shown in Figure \ref{fig1} and are pruned by identifying
-indices such that
+pairs of vectors below the correlation threshold. For example, including only
+one more term finds that 72\% of adjacent vectors fall below the a correlation
+threshold of $0.99$ in the example shown in Figure \ref{fig1} and are pruned by
+identifying indices such that
 \[
 \sigma_1^2 (D^1 P v_1)^2 +
 \sigma_2^2 (D^1 P v_2)^2 > 2(1-t).
 \]
 Note that we use the permutation $P$ defined by the order of vector $v_1$
 throughout. Including five terms prunes over 97\% of adjacent vector pairs,
-leaving only 11 candidate pairs of adjacent vectors.
+leaving only 11 candidate pairs of adjacent vectors that might possibly
+meet the correlation threshold.
 In general, using $p\le k$ terms to prune pairs of vectors below the
 correlation threshold boils down to evaluating the expression
 \begin{equation}\label{proj}
@@ -274,14 +274,13 @@ matrix $V$, $s_{1:p}$ the vector of the first $p$ singular values.
 Pairs of vectors below the correlation threshold that lie more than one index
 difference apart relative to the permutation $P$ can be similarly pruned by
 replacing $D^1$ with $D^j$, $j=1,2,\ldots,\ell$ in the above expressions.
-Following this procedure, we can produce a well-pruned candidate set of
-possible vector pairs that meet a given correlation threshold using $\ell$
-matrix vector products with matrices of order $n \times p$, where $p$ is chosen
-in practice such that $p<<k$. The steps of this procedure are outlined in the
-following algorithm:
+Following this process, we can produce a well-pruned candidate set of possible
+vector pairs that meet a given correlation threshold using $\ell$ matrix vector
+products with matrices of order $n \times p$, where $p$ is chosen in practice
+such that $p<<k$. These steps are formalized in Algorithm \ref{prune} below.
 
 \begin{algorithm}\label{prune}
-Input: data matrix $A\in \mathcal{R}^{m\times n}$, correlation threshold $t$, maximum
+Input: data matrix $A\in \mathcal{R}^{m\times n}$, correlation threshold $t$,
 truncated SVD rank $p<<k$.
 \begin{enumerate}
 \item Compute the truncated SVD $AV_{1:p} = U_{1:p}\mathrm{diag}(s_{1:p})$,
@@ -332,7 +331,7 @@ efficiently compute a relatively low-rank truncated SVD of potentially
 large  matrices required by step 1 of Algorithm \ref{prune}.  Fortunately,
 both needs are met by one algorithm.
 
-The augmented, implicitly restarted Lanczos bidiagonalization algorithm (IRLBA)
+The augmented implicitly restarted Lanczos bidiagonalization algorithm (IRLBA)
 of Baglama and Reichel \cite{br} efficiently computes truncated singular value
 decompositions of large dense or sparse matrices. Reference implementations are
 available for R\cite{irlba-R}, Matlab\cite{irlba-M}, and Python\cite{irlba-P}.
@@ -340,6 +339,18 @@ The R implementation includes efficient methods for re-starting the algorithm
 to increase the subspace dimension (see step 5 of Algorithm \ref{prune}), and
 efficient methods for computing the SVD of scaled and centered matrices without
 explicitly forming a new matrix.
+
+Let $x\in\mathcal{R}^n$ represent the vector of column means of the matrix $A$,
+$W\in\mathcal{R}^{n\times n}$ be a diagonal matrix with the reciprocal of the
+column norms of $A$ along the diagonal, and let $e\in\mathcal{R}^m$ be a vector
+of all ones. Then $(A - ex^T)W$ is a centered matrix with zero column means,
+and scaled to have unit column norms, and
+
+XXX
+
+IRLBA, based on the Lanczos process, is an iterative method based on
+matrix-vector products involving the matrix $A$.
+
 
 XXX scaling/centering discussion and example
 
