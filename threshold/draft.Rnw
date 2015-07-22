@@ -282,7 +282,7 @@ following algorithm:
 
 \begin{algorithm}\label{prune}
 Input: data matrix $A\in \mathcal{R}^{m\times n}$, correlation threshold $t$, maximum
-subspace dimension $p<<n$.
+truncated SVD rank $p<<k$.
 \begin{enumerate}
 \item Compute the truncated SVD $AV_{1:p} = U_{1:p}\mathrm{diag}(s_{1:p})$,
 where $V_{1:p} = [v_1, v_2, \ldots, v_p]$
@@ -319,7 +319,7 @@ Algorithm \ref{prune} by construction guarantees that no pruned vector pair
 meets the given correlation threshold; that is, the pruning can not produce any
 ``false negatives.''  The algorithm typically prunes the vast majority of pairs
 of vectors below the correlation threshold with truncated singular value
-decompositions of only relatively low dimension $p$.  The choice of $p$ is a
+decompositions of only relatively low rank $p$.  The choice of $p$ is a
 balance between work in computing a truncated SVD and work required by the
 $\ell$ matrix vector products of order $n\times p$ in step 4.
 
@@ -340,6 +340,8 @@ The R implementation includes efficient methods for re-starting the algorithm
 to increase the subspace dimension (see step 5 of Algorithm \ref{prune}), and
 efficient methods for computing the SVD of scaled and centered matrices without
 explicitly forming a new matrix.
+
+XXX scaling/centering discussion and example
 
 \section{Numerical experiments}\label{examples}
 

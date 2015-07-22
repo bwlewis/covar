@@ -43,7 +43,7 @@ cat("longest run of adjacent points within threshold l =",max_group_size,"\n")
 
 
 library(biclust)  # for the EisenYeast and BicatYeast data
-data(BicatYeast)  # in gene by sample orientation
+data(BicatYeast)  # in gene by sample orientation (a tiny example for testing)
 A = t(BicatYeast) # to correlate genes to genes
 
 C = cor(A)                     # actual correlation matrix for reference
