@@ -300,7 +300,7 @@ where $e_{\tilde{j}}\in\mathcal{R}^n$ consists of $1$ in position $\tilde{j}$ an
 zeros otherwise.
 \item If there are judged to be  ``too many'' candidate pairs, increase $p$ and go to
 step 1. Continue to increase $p$ in this way until the number of candidate
-pairs stops decreasing (the best this algorithm can do).
+pairs is sufficiently small or stops decreasing (the best this algorithm can do).
 \item Recover the non-permuted candidate column vector
 indices $(j,i)$ from $j=e_{\tilde{j}}^T Pq$ and $i=e_{\tilde{j}+\tilde{i}}^TPq$ for every
 pair $(\tilde{j},\tilde{j} + \tilde{i})$ in step 4, where
@@ -322,14 +322,16 @@ decompositions of only relatively low rank $p$.  The choice of $p$ is a
 balance between work in computing a truncated SVD and work required by the
 $\ell$ matrix vector products of order $n\times p$ in step 4.
 
-\section{Fast truncated SVD for general matrices}\label{irlba}
+
+
+\section{General matrices and fast truncated SVD}\label{irlba}
 
 We have so far assumed that the mean of each column vector of the $m\times n$
 matrix $A$ is zero and the columns are scaled to have unit norm, but we really
-want a method that works with general matrices $A$. We've also implicitly
-assumed that we can efficiently compute a relatively low-rank truncated SVD of
-potentially large  matrices required by step 1 of Algorithm \ref{prune}.
-Fortunately, both needs are met by one algorithm.
+want a method that works with general matrices $A$.  We also want a way to
+efficiently compute a relatively low-rank truncated SVD of potentially large
+matrices required by step 1 of Algorithm \ref{prune}.  Fortunately, both
+desires are met by one algorithm.
 
 The augmented implicitly restarted Lanczos bidiagonalization algorithm (IRLBA)
 of Baglama and Reichel \cite{br} efficiently computes truncated singular value
@@ -340,7 +342,7 @@ to increase the subspace dimension (see step 5 of Algorithm \ref{prune}), and
 for computing the SVD of scaled and centered matrices without explicitly
 forming a new matrix.
 
-We relax the column mean and scale assumptions without much additional
+We relax the column mean and scale assumptions without introducing much additional
 computational or storage overhead as follows.  Let
 $x=[x_1,x_2,\ldots,x_n]\in\mathcal{R}^n$ represent the vector of column means
 of the matrix $A$, $w=[w_1^2,w_2^2,\ldots,w_n^2]\in\mathcal{R}^n$ be the vector
