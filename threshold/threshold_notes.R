@@ -15,7 +15,7 @@ A = sweep(A,2,apply(A,2,mean))
 A = sweep(A,2,sqrt(apply(A,2,crossprod)),FUN=`/`)
 s = svd(A)
 
-t = 0.99 # correlation threshold
+t = 0.95 # correlation threshold
 
 # permutation ordering of the first basis vector
 i = order(s$v[,1])
@@ -46,10 +46,11 @@ abline(h=c(0,sqrt(2*(1-t))/s$d[1]),col=2)
 # the threshold and are therefore correlated or not. Each point in this plot
 # represents the difference between a *pair* of ordered points (a pair of
 # projected vectors).
-k = 5    # subspace dimension
+k = 10    # subspace dimension
 d = diff(s$v[i,1:k,drop=FALSE],lag=1)^2 %*% s$d[1:k]^2
 ylim = c(0,max(max(d), 1.01*2*(1-t)))
 plot(d,ylim=ylim)
 abline(h=2*(1 - t),col=2,lwd=1)
 j = which(d < 2*(1-t))
 points(j,d[j],pch=19,col="#ff000044")
+print(length(j))

@@ -22,7 +22,7 @@
 %% Note that you should probably run the above a few times because
 %% LaTeX generally takes a few runs to get reference numbers right.
 %%
-\documentclass[12pt]{article}
+\documentclass[10pt]{article}
 
 \usepackage{amsmath}
 \usepackage{hyperref}
@@ -61,7 +61,16 @@
 
 
 \title{Efficient Thresholded Correlation using Truncated Singular Value Decomposition}
-\author{Some dudes}
+\author{
+J. Baglama\\
+Department of Mathematics,\\University of Rhode Island
+\and
+B. Lewis\\
+Paradigm4, Inc.\\
+\and
+A. Poliakov\\
+Paradigm4, Inc.
+}
 
 \date{}
 
@@ -89,7 +98,7 @@ can efficiently compute thresholded subsets of very large correlation matrices.
 \section{Introduction}\label{intro}
 
 XXX add discussion of applications (genomics?) and previous work (especially
-\cite{xstk1},\cite{xstk2} and
+\cite{xstk1},\cite{xstk2},\cite{xbm} and
 related but different work that use PCA: \cite{latj} and \cite{bhpt} are related but different),
 then on to the preliminaries:
 \[\]
@@ -99,14 +108,15 @@ column vectors.  Denote the columns of $A$ as $a_j\in\mathcal{R}^m$ for
 $j=1,2,\ldots,n$, $A=[a_1, a_2, \ldots, a_n]\in\mathcal{R}^{m\times n}$, and
 let $k=\mathrm{rank}(A)$.  Assume that the mean of each column $a_j$ is zero
 and that each column has unit norm $\|a_j\| = 1$. Here and below, $\|\cdot\|$
-denotes the Euclidean vector norm. Then the sample correlation matrix
+denotes the Euclidean vector norm. Then the Pearson sample correlation matrix
 $\mathrm{cor}(A)=A^TA$.  Note that under these assumptions the sample
 correlation and covariance matrices are the same.  Section \ref{irlba} below
 illustrates how to relax the unit norm and zero mean assumptions in practice.
 
 Let $A=U\Sigma V^T$ be the singular value decomposition of $A$, where
-$U\in\mathcal{R}^{m\times k}$, $U^TU = I$, $V\in\mathcal{R}^{n\times k}$,
-$V^TV=I$, and $\Sigma\in\mathcal{R}^{k\times k}$ is a diagonal matrix with
+$U\in\mathcal{R}^{m\times k}$, $V\in\mathcal{R}^{n\times k}$,
+$U^TU = V^TV = I$,
+and $\Sigma\in\mathcal{R}^{k\times k}$ is a diagonal matrix with
 diagonal entries $\sigma_1 \ge \sigma_2 \ge \cdots \ge \sigma_k > 0$.  For
 later convenience, we write $s_{1:p}=[\sigma_1, \sigma_2, \ldots, \sigma_p]^T$
 to be the vector of the first $p\le k$ singular values along the diagonal of
@@ -129,42 +139,44 @@ $A$. Then
 \begin{equation}\label{cordist}
 \mathrm{cor}(a_i,a_j) = a_i^Ta_j = 1 - \|a_i - a_j\|^2/2.
 \end{equation}
-In particular, for a given correlation threshold $t$, $0<t<1$, pairs
-of vectors $a_i$ and $a_j$ such that $\|a_i - a_j\|^2 > 2(1-t)$ lie
-below the correlation threshold.
+In particular, for a given correlation threshold $t$, $0<t<1$, if
+$\|a_i - a_j\|^2 > 2(1-t)$ then
+$\mathrm{cor}(a_i, a_j) < t$.
 \end{lemma}
-\begin{proof} (XXX probably omit this)
-\begin{eqnarray*}
-\|a_i - a_j\|^2 &=& (a_i - a_j)^T(a_i - a_j) \\
-&=& a_i^T a_i + a_j^T a_j - 2a_i^T a_j \\
-&=& \|a_i\|^2 + \|a_j\|^2 - 2a_i^T a_j \\
-&=& 2 - 2a_i^T a_j.
-\end{eqnarray*}
-The lemma follows by solving for $a_i^Ta_j$.
-\end{proof}
+%%\begin{proof}
+%%\begin{eqnarray*}
+%%\|a_i - a_j\|^2 &=& (a_i - a_j)^T(a_i - a_j) \\
+%%&=& a_i^T a_i + a_j^T a_j - 2a_i^T a_j \\
+%%&=& \|a_i\|^2 + \|a_j\|^2 - 2a_i^T a_j \\
+%%&=& 2 - 2a_i^T a_j.
+%%\end{eqnarray*}
+%%The lemma follows by solving for $a_i^Ta_j$.
+%%\end{proof}
 
 Equation \ref{cordist} equates the problem of finding pairs of highly
 correlated column vectors from the matrix $A$ with a problem of finding paris
 of vectors sufficiently close together. For example, correlation values larger
 than 0.99 may only be associated with column vectors from the matrix $A$ whose
-Euclidean distance is less than $\sqrt{0.02}$.  Vectors farther apart will not
+Euclidean distance is less than $\sqrt{0.02}$.  Vectors farther apart can not
 meet the correlation threshold.
 
-The following lemma expresses the Euclidean distance between any two columns of the
-matrix $A$ as a weighted sum of projected interval distances along the SVD
+The following lemma expresses the Euclidean distance between any two columns of
+the matrix $A$ as a weighted sum of projected interval distances along the SVD
 basis vectors forming the columns of $V$.
 \begin{lemma}
 Let $a_i$ and $a_j$, $1\le i,j\le n$ be any two columns of the matrix
 $A$. Then
 \begin{equation}\label{vdist}
 \|a_i - a_j\|^2 =
-\sigma_1^2 |v_{1i} - v_{1j}|^2 + 
-\sigma_2^2 |v_{2i} - v_{2j}|^2 + \cdots + 
-\sigma_k^2 |v_{ki} - v_{kj}|^2,
+\sigma_1^2 |e_i^Tv_{1} - e_j^Tv_{1}|^2 + 
+\sigma_2^2 |e_i^Tv_{2} - e_j^Tv_{2}|^2 + \cdots + 
+\sigma_k^2 |e_i^Tv_{ki} - e_j^Tv_{k}|^2,
 \end{equation}
-where $v_{kj}$ denotes the $jth$ position in the vector $v_k$ (that is, the
-$[j,k]$ entry in the matrix $V$).
 \end{lemma}
+where here and below, $e_{j}\in\mathcal{R}^n$ represents the $j$th unit basis
+vector consisting of $1$ in position $j$ and zeros otherwise.
+(Thus, $e_j^Tv_{k}$ is the $j$th position in the vector $v_k$; that is, the
+$[j,k]$ entry in the matrix $V$.)
 
 %%\begin{proof}
 %%\begin{align*}
@@ -189,8 +201,8 @@ $j=1,2,\ldots,k$ are nonincreasing and defined by the covariance structure of
 the data.  Given a correlation threshold $t$, $0<t<1$, Equations \ref{cordist}
 and \ref{vdist} together suggest that pairs of vectors can be excluded from
 consideration whenever their projected distance is too large.  For example if
-$\sigma_1^2 |v_{1i} - v_{1j}|^2 \ge 2(1-t)$, then we can conclude from just two
-scalar values that the column vectors $a_i$ and $a_j$ do not meet the
+$\sigma_1^2 |e_i^Tv_{1} - e_j^Tv_{1}|^2 \ge 2(1-t)$, then we can conclude from
+just two scalar values that the column vectors $a_i$ and $a_j$ do not meet the
 correlation threshold $t$.
 
 In practice, many pairs of vectors may be ruled out in this fashion by
@@ -198,28 +210,28 @@ inspecting distances in low-dimensional subspaces, substantially reducing the
 complexity of computing thresholded correlation matrices.  Approaches that
 cheaply omit pairs of vectors from consideration are called \emph{pruning
 methods}, and a variety of pruning methods have been described elsewhere for
-the thresholded correlation problem; see, for example\cite{xstk1,xstk2,zf,mnl}
-and the references therein.  The approach described here prunes along an
-intuitive path of decreasing variance defined by the data and computed by the
-SVD.
+the thresholded correlation problem; see, for
+example\cite{mnl,xbm,xstk1,xstk2,zf} and the references therein.  The approach
+described here prunes along an intuitive path of decreasing variance defined by
+the data and computed by the SVD.
 
 \section{Efficient pruning using the truncated SVD}
 
 Let $t$ be a given correlation threshold $0<t<1$, and let
 $P\in\mathcal{R}^{n\times n}$ be a permutation matrix that orders then entries
 of $v_1$ in increasing order.  It follows from Equations \ref{cordist} and
-\ref{vdist} that for any $i,j=1,2,\ldots,n$, if $\sigma_1^2 |v_{1i} - v_{1j}|^2
-\ge 2(1-t)$ then the column vectors $a_j$ and $a_i$ do not meet the correlation
-threshold.  Let $\ell$ be the longest run of successive points in $P v_1$
-within the interval $\sqrt{2(1-t)}/\sigma_1$. For example, Figure \ref{fig1}
-displays the entries of $v_1$ for the ``BicatYeast'' example from Section
-\ref{examples} in increasing order.  The lines in the plot illustrate the
-interval associated with the correlation threshold $t=0.99$. The quantity
-$\ell$ is obtained by rolling the interval across all the points in the plot
-and counting the maximum number of points that lie within the interval.  With
-respect to the ordering $P$, $\ell$ represents the biggest index difference
-that paris of indices corresponding to correlated vectors above the threshold
-can exhibit.
+\ref{vdist} that for any $i,j=1,2,\ldots,n$, if $\sigma_1^2 |e_i^Tv_{1} -
+e_j^Tv_{1j}|^2 \ge 2(1-t)$ then $\mathrm{cor}(a_i,a_j) < t$.  Let $\ell$ be the
+longest run of successive points in $P v_1$ within the interval
+$\sqrt{2(1-t)}/\sigma_1$. For example, Figure \ref{fig1} displays the entries
+of $v_1$ for the small ``BicatYeast'' example (where $A\in\mathcal{R}^{70\times
+419}$) from Section \ref{examples} in increasing order.  The lines in the plot
+illustrate the interval associated with the correlation threshold $t=0.95$. The
+quantity $\ell$ is obtained by rolling the interval across all the points in
+the plot and counting the maximum number of points that lie within the
+interval.  With respect to the ordering $P$, $\ell$ represents the biggest
+index difference that paris of indices corresponding to correlated vectors
+above the threshold can exhibit.
 
 \begin{figure}[!ht]
 \begin{center}
@@ -230,11 +242,15 @@ A=t(BicatYeast)
 s=svd(A)
 i=order(s$v[,1])
 plot(s$v[i,1], ylab=expression(P * v[1]), xlab="Sorted index", pch='.')
-t=0.99
+t=0.95
 abline(h=c(-0.05,-0.05+sqrt(2*(1-t))/s$d[1]),col=2,lwd=0.5)
 @
 \caption{
-Example plot of the ordered entries of $v_1$ for the BicatYeast example from Section \ref{examples}. The red lines illustrate the interval corresponding threshold $t=0.99$. Points farther apart than this interval correspond to column vectors that do not meet the correlation threshold.
+Example plot of the ordered entries of $v_1$ for the BicatYeast example from
+Section \ref{examples}. The red lines illustrate the interval corresponding
+threshold $t=0.95$ placed at an arbitrary location on the vertical axis. Points
+farther apart than this interval correspond to column vectors that do not meet
+the correlation threshold.
 \label{fig1}
 }
 \end{center}
@@ -247,23 +263,27 @@ Then $D^1P v_1$ consists of the differences of adjacent entries in $P v_1$.
 Entries such that $\sigma_1^2 (D^1 P v_1)^2 > 2(1-t)$ correspond to pairs of
 vectors that do not meet the correlation threshold, where here and below
 an exponent applied to a vector denotes element-wise exponentiation.
-However, this observation is unlikely to rule out many pairs of vectors in most
-problems. For example, the minimum distance between the points shown in the
-example in Figure \ref{fig1} is less that $\sqrt{2(1-t)}/\sigma_1$, and no
-pruning at all occurs.
+
+Even a 1-d projected interval distance threshold may prune many possible
+non-adjacent vector pairs with respect to the ordering defined by $P$ as
+illustrated by the example in Figure \ref{fig1}.  However, this observation is
+unlikely to rule out many adjacent pairs of vectors in most problems. For
+example, the minimum distance between the points shown in the example in Figure
+\ref{fig1} is less that $\sqrt{2(1-t)}/\sigma_1$, and no pruning at all occurs.
 
 Including more terms from Equation \ref{vdist} increases our ability to prune
-pairs of vectors below the correlation threshold. For example, including only
-one more term finds that 72\% of adjacent vectors fall below the a correlation
-threshold of $0.99$ in the example shown in Figure \ref{fig1} and are pruned by
-identifying indices such that
+adjacent pairs of vectors with respect to the ordering defined by $P$
+below the correlation threshold. For example,
+including only one more term finds that 49\% of adjacent vectors fall below the
+a correlation threshold of $0.95$ in the example shown in Figure \ref{fig1} and
+are pruned by identifying indices such that
 \[
 \sigma_1^2 (D^1 P v_1)^2 +
 \sigma_2^2 (D^1 P v_2)^2 > 2(1-t).
 \]
 Note that we use the permutation $P$ defined by the order of vector $v_1$
-throughout. Including five terms prunes over 97\% of adjacent vector pairs,
-leaving only 11 candidate pairs of adjacent vectors that might possibly
+throughout. Including ten terms prunes over 96\% of adjacent vector pairs,
+leaving only 15 candidate pairs of adjacent vectors that might possibly
 meet the correlation threshold.
 In general, using $p\le k$ terms to prune pairs of vectors below the
 correlation threshold boils down to evaluating the expression
@@ -280,27 +300,35 @@ replacing $D^1$ with $D^j$, $j=1,2,\ldots,\ell$ in the above expressions.
 Following this process, we can produce a well-pruned candidate set of possible
 vector pairs that meet a given correlation threshold using $\ell$ matrix vector
 products with matrices of order $n \times p$, where $p$ is chosen in practice
-such that $p<<k$. These steps are formalized in Algorithm \ref{prune} below.
+such that $p<<k$. Setting $p=10$ for the example shown in Figure
+\ref{fig1} prunes all but $431$ possible vector pairs out of a total
+$419(419-1)/2 = 87,571$ with $\ell=138$.
+
+These steps are formalized in Algorithm \ref{prune} below. The algorithm
+proceeds in two main parts: steps 1--6 prune pairs of vectors down to a small
+candidate set of vector pairs that may meet the correlation threshold; step 7
+computes the correlation values and applies the threshold across the reduced
+set of vector pairs.
 
 \begin{algorithm}\label{prune}
-Input: data matrix $A\in \mathcal{R}^{m\times n}$, correlation threshold $t$,
+Input: data matrix $A\in \mathcal{R}^{m\times n}$ with columns scaled to have
+zero mean and unit norm, correlation threshold $t$,
 truncated SVD rank $p<<k$.
 \begin{enumerate}
 \item Compute the truncated SVD $AV_{1:p} = U_{1:p}\mathrm{diag}(s_{1:p})$,
-where $V_{1:p} = [v_1, v_2, \ldots, v_p]$
+where\\
+$V_{1:p}=[v_1, v_2, \ldots, v_p]$
 and $\mathrm{diag}(s_{1:p})$ denotes the diagonal matrix of the first $p$ singular values.
 \item Compute permutation $P$ that orders points in $v_1$.
 \item Compute $\ell$, the longest run of successive points in $P v_1$ within the interval $\sqrt{2(1-t)}/\sigma_1$.
-\item Compute a set of candidate pairs $(\tilde{j},\tilde{j}+\tilde{i})$ with respect to the index order defined by the permutation $P$ that possibly meet the correlation threshold
+\item Compute a set of candidate index pairs $(\tilde{j},\tilde{j}+\tilde{i})$ with respect to the index order defined by the permutation $P$ that possibly meet the correlation threshold
 \[
 \bigcup_{\tilde{i}=1}^\ell
 \left\{
 (\tilde{j},\tilde{j}+\tilde{i}) : 
 e_{\tilde{j}}^T(D^{\tilde{i}} P V_{1:p} )^2 s_{1:p}^2 \le 2(1-t)
-\right\},
+\right\}.
 \]
-where $e_{\tilde{j}}\in\mathcal{R}^n$ consists of $1$ in position $\tilde{j}$ and
-zeros otherwise.
 \item If there are judged to be  ``too many'' candidate pairs, increase $p$ and go to
 step 1. Continue to increase $p$ in this way until the number of candidate
 pairs is sufficiently small or stops decreasing (the best this algorithm can do).
@@ -318,12 +346,12 @@ judge whether there are ``too many'' candidate pairs (step 5) after only a 1-d
 projection $\tilde{i}=1$ in step 4 of the algorithm.
 
 Algorithm \ref{prune} by construction guarantees that no pruned vector pair
-meets the given correlation threshold; that is, the pruning can not produce any
-``false negatives.''  The algorithm typically prunes the vast majority of pairs
+exceeds the given correlation threshold; that is, the pruning can not produce
+any false negatives.  The algorithm typically prunes the vast majority of pairs
 of vectors below the correlation threshold with truncated singular value
-decompositions of only relatively low rank $p$.  The choice of $p$ is a
-balance between work in computing a truncated SVD and work required by the
-$\ell$ matrix vector products of order $n\times p$ in step 4.
+decompositions of only relatively low rank $p$.  The choice of $p$ is a balance
+between work in computing a truncated SVD and work required by the $\ell$
+matrix vector products of order $n\times p$ in step 4.
 
 
 
@@ -347,18 +375,18 @@ forming a new matrix.
 
 We relax the column mean and scale assumptions without introducing much additional
 computational or storage overhead as follows.  Let
-$x=[x_1,x_2,\ldots,x_n]\in\mathcal{R}^n$ represent the vector of column means
+$z=[z_1,z_2,\ldots,z_n]\in\mathcal{R}^n$ represent the vector of column means
 of the matrix $A$, $w=[w_1^2,w_2^2,\ldots,w_n^2]\in\mathcal{R}^n$ be the vector
 of squared column norms of $A$, and $W\in\mathcal{R}^{n\times n}$ a diagonal
-matrix with diagonal entries $1/\sqrt{w_i^2 - m x_i^2}$.  Let
-$e\in\mathcal{R}^m$ be a vector of all ones.  Then $(A - ex^T)W$ is a centered
+matrix with diagonal entries $1/\sqrt{w_i^2 - m z_i^2}$.  Let
+$e\in\mathcal{R}^m$ be a vector of all ones.  Then $(A - ez^T)W$ is a centered
 matrix with zero column means, and scaled to have unit column norms, and
 \[
-\mathrm{cor}(A) = W^T (A-ex^T)^T (A-ex^T) W.
+\mathrm{cor}(A) = W^T (A-ez^T)^T (A-ez^T) W.
 \]
-IRLBA, based on the Lanczos process, is a method of iterated matrix-vector
-products. The main idea behind efficient application of IRLBA to correlation
-problems replaces matrix-vector products of the form $Az$ with $AWz - ex^TWz$ in
+The IRLBA, based on the Lanczos process, is a method of iterated matrix-vector
+products. The main idea behind efficient application of IRLB to correlation
+problems replaces matrix-vector products of the form $Ax$ with $AWx - ez^TWx$ in
 the iterations, implicitly working with a scaled and centered matrix without
 forming it.  This comes at the cost of storing two additional length $n$ vectors and
 computing two additional vector inner products per matrix-vector product.
@@ -390,6 +418,8 @@ Levin, Asriel U., Todd K. Leen, and John E. Moody. Fast pruning using principal 
 Mueen, A., Nath, S., and Liu, J., Fast approximate correlation for
 massive time-series data, in Proceedings of the 2010 ACM SIGMOD International
 Conference on Management of data, 2010, pp. 171-182.
+\bibitem{xbm}
+Xiong, Hui, Mark Brodie, and Sheng Ma. "Top-cop: Mining top-k strongly correlated pairs in large databases." Data Mining, 2006. ICDM'06. Sixth International Conference on. IEEE, 2006.
 \bibitem{xstk1}
 Xiong, Hui, et al. "Exploiting a support-based upper bound of Pearson's correlation coefficient for efficiently identifying strongly correlated pairs." Proceedings of the tenth ACM SIGKDD international conference on Knowledge discovery and data mining. ACM, 2004.
 \bibitem{xstk2}
