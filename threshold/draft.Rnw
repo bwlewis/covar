@@ -319,7 +319,7 @@ $419(419-1)/2 = 87,571$ with $\ell=138$.
 
 These steps are formalized in Algorithm \ref{prune} below. The algorithm
 proceeds in two main parts: steps 1--6 prune pairs of vectors down to a small
-candidate set of vector pairs that may meet the correlation threshold; step 7
+candidate set that may meet the correlation threshold; step 7
 computes the correlation values and applies the threshold across the reduced
 set of vector pairs.
 
@@ -418,8 +418,8 @@ at most computing two additional vector inner products per matrix-vector product
 \begin{thebibliography}{99}
 
 %% Related use of SVD in other methods
-\bibitem{spca}
-Bair, Eric, et al. Prediction by supervised principal components. Journal of the American Statistical Association 101.473 (2006).
+%\bibitem{spca}
+%Bair, Eric, et al. Prediction by supervised principal components. Journal of the American Statistical Association 101.473 (2006).
 
 %% irlba
 \bibitem{irlba}
