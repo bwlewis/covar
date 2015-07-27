@@ -219,7 +219,7 @@ $j=1,2,\ldots,k$ are nonincreasing and defined by the covariance structure of
 the data.  Given a correlation threshold $t$, $0<t<1$, Equations \ref{cordist}
 and \ref{vdist} together suggest that pairs of vectors can be excluded from
 consideration whenever their projected distance is too large.  For example if
-$\sigma_1^2 |e_i^Tv_{1} - e_j^Tv_{1}|^2 \ge 2(1-t)$, then we can conclude from
+$\sigma_1^2 |e_i^Tv_{1} - e_j^Tv_{1}|^2 > 2(1-t)$, then we can conclude from
 just two scalar values that the column vectors $a_i$ and $a_j$ do not meet the
 correlation threshold $t$.
 In practice, many pairs of vectors may be pruned in this fashion by
@@ -232,7 +232,7 @@ Let $t$ be a given correlation threshold $0<t<1$, and let
 $P\in\mathcal{R}^{n\times n}$ be a permutation matrix that orders then entries
 of $v_1$ in increasing order.  It follows from Equations \ref{cordist} and
 \ref{vdist} that for any $i,j=1,2,\ldots,n$, if $\sigma_1^2 |e_i^Tv_{1} -
-e_j^Tv_{1j}|^2 \ge 2(1-t)$ then $\mathrm{cor}(a_i,a_j) < t$.  Let $\ell$ be the
+e_j^Tv_{1j}|^2 > 2(1-t)$ then $\mathrm{cor}(a_i,a_j) < t$.  Let $\ell$ be the
 longest run of successive points in $P v_1$ within the interval
 $\sqrt{2(1-t)}/\sigma_1$. For example, Figure \ref{fig1} displays the entries
 of $v_1$ for the small ``BicatYeast'' example (where $A\in\mathcal{R}^{70\times
@@ -278,13 +278,15 @@ an exponent applied to a vector denotes element-wise exponentiation.
 Even a 1-d projected interval distance threshold may prune many possible
 non-adjacent vector pairs with respect to the ordering defined by $P$ as
 illustrated by the example in Figure \ref{fig1}.  However, this observation is
-unlikely to rule out many adjacent pairs of vectors in most problems. For
-example, the minimum distance between the points shown in the example in Figure
-\ref{fig1} is less that $\sqrt{2(1-t)}/\sigma_1$, and no pruning at all occurs.
+unlikely to rule out many adjacent pairs of vectors in most problems.  For
+instance, the minimum distance between the points shown in the example in
+Figure \ref{fig1} is less than $\sqrt{2(1-t)}/\sigma_1$, and no pruning occurs.
 
 Including more terms from Equation \ref{vdist} increases our ability to prune
-adjacent pairs of vectors with respect to the ordering defined by $P$
-below the correlation threshold. For example,
+adjacent pairs of vectors
+below the correlation threshold
+with respect to the ordering defined by $P$.
+For example,
 including only one more term finds that 49\% of adjacent vectors fall below the
 a correlation threshold of $0.95$ in the example shown in Figure \ref{fig1} and
 are pruned by identifying indices such that
