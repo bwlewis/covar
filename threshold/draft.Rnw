@@ -27,7 +27,6 @@
 \usepackage{amsmath}
 \usepackage{hyperref}
 
-
 \newtheorem{theorem}{Theorem}[section]
 \newtheorem{lemma}[theorem]{Lemma}
 \newtheorem{proposition}[theorem]{Proposition}
@@ -79,12 +78,19 @@ Paradigm4, Inc.
 \SweaveOpts{concordance=TRUE}
 \maketitle
 
+%%<<eval=TRUE, echo=FALSE>>=
+%%Sys.setenv(TEXINPUTS=getwd(),
+%%           BIBINPUTS=getwd(),
+%%           BSTINPUTS=getwd())
+%%@
+
+
 \begin{abstract}
 
 Efficiently computing a subset of a correlation matrix consisting of values
 above a specified threshold is important to many practical applications.
 Real-world problems in genomics, machine learning, finance, and other fields
-can produce correlation matrices too large to explicitly form and tracticably
+can produce correlation matrices too large to explicitly form and tractably
 compute. Often, only values corresponding to highly-correlated vectors are of
 interest, and those values typically make up a small fraction of the overall
 correlation matrix. We present a method based on the singular value
@@ -94,14 +100,10 @@ can efficiently compute thresholded subsets of very large correlation matrices.
 \end{abstract}
 
 
-
 \section{Introduction}\label{intro}
 
-XXX add discussion of applications (genomics?) and previous work (especially
-\cite{xstk1},\cite{xstk2},\cite{xbm} and
-related but different work that use PCA: \cite{latj} and \cite{bhpt} are related but different),
-then on to the preliminaries:
-\[\]
+XXX
+\\
 
 Consider a real-valued data matrix $A$ consisting of $m$ observations of $n$
 column vectors.  Denote the columns of $A$ as $a_j\in\mathcal{R}^m$ for
@@ -211,9 +213,10 @@ complexity of computing thresholded correlation matrices.  Approaches that
 cheaply omit pairs of vectors from consideration are called \emph{pruning
 methods}, and a variety of pruning methods have been described elsewhere for
 the thresholded correlation problem; see, for
-example\cite{mnl,xbm,xstk1,xstk2,zf} and the references therein.  The approach
-described here prunes along an intuitive path of decreasing variance defined by
-the data and computed by the SVD.
+example\cite{prune1, prune2, prune3, prune4}
+and the references therein.  The approach described here prunes along an
+intuitive path of decreasing variance defined by the data and computed by the
+SVD.
 
 \section{Efficient pruning using the truncated SVD}
 
@@ -296,7 +299,7 @@ matrix $V$, $s_{1:p}$ the vector of the first $p$ singular values.
 
 Pairs of vectors below the correlation threshold that lie more than one index
 difference apart relative to the permutation $P$ can be similarly pruned by
-replacing $D^1$ with $D^j$, $j=1,2,\ldots,\ell$ in the above expressions.
+replacing $D^1$ with $D^j$, $j=2,3,\ldots,\ell$ in the above expressions.
 Following this process, we can produce a well-pruned candidate set of possible
 vector pairs that meet a given correlation threshold using $\ell$ matrix vector
 products with matrices of order $n \times p$, where $p$ is chosen in practice
@@ -365,13 +368,9 @@ matrices required by step 1 of Algorithm \ref{prune}.  Fortunately, both
 desires are met by one algorithm.
 
 The augmented implicitly restarted Lanczos bidiagonalization algorithm (IRLBA)
-of Baglama and Reichel \cite{br} efficiently computes truncated singular value
+of Baglama and Reichel \cite{irlba} efficiently computes truncated singular value
 decompositions of large dense or sparse matrices. Reference implementations are
-available for R\cite{irlba-R}, Matlab\cite{irlba-M}, and Python\cite{irlba-P}.
-The R implementation includes easy to use and efficient methods for restarting
-to increase the subspace dimension (see step 5 of Algorithm \ref{prune}), and
-for computing the SVD of scaled and centered matrices without explicitly
-forming a new matrix.
+available for R\cite{irlbar}, Matlab\cite{irlbam}, and Python\cite{irlbap}.
 
 We relax the column mean and scale assumptions without introducing much additional
 computational or storage overhead as follows.  Let
@@ -380,7 +379,7 @@ of the matrix $A$, $w=[w_1^2,w_2^2,\ldots,w_n^2]\in\mathcal{R}^n$ be the vector
 of squared column norms of $A$, and $W\in\mathcal{R}^{n\times n}$ a diagonal
 matrix with diagonal entries $1/\sqrt{w_i^2 - m z_i^2}$.  Let
 $e\in\mathcal{R}^m$ be a vector of all ones.  Then $(A - ez^T)W$ is a centered
-matrix with zero column means, and scaled to have unit column norms, and
+matrix with zero column means and scaled to have unit column norms, and
 \[
 \mathrm{cor}(A) = W^T (A-ez^T)^T (A-ez^T) W.
 \]
@@ -389,7 +388,7 @@ products. The main idea behind efficient application of IRLB to correlation
 problems replaces matrix-vector products of the form $Ax$ with $AWx - ez^TWx$ in
 the iterations, implicitly working with a scaled and centered matrix without
 forming it.  This comes at the cost of storing two additional length $n$ vectors and
-computing two additional vector inner products per matrix-vector product.
+at most computing two additional vector inner products per matrix-vector product.
 
 
 
@@ -405,33 +404,59 @@ computing two additional vector inner products per matrix-vector product.
 \section{Conclusion}\label{conclusion}
 
 
-%% XXX switch to bibtex / make citations uniform
 
 \begin{thebibliography}{99}
-\bibitem{br}
-Baglama, J. and Reichel, L., Augmented Implicitly Restarted Lanczos Bidiagonalization Methods, SIAM J. Sci. Comput., 2005.
-\bibitem{bhpt}
-Bair, E., Hastie, T., Paul, D.., and Tibshirani, P., Prediction by supervised principal components, Journal of the American Statistical Association 101, no. 473, 2006.
-\bibitem{latj}
+
+%% Related use of SVD in other methods
+\bibitem{spca}
+Bair, Eric, et al. Prediction by supervised principal components. Journal of the American Statistical Association 101.473 (2006).
+
+%% irlba
+\bibitem{irlba}
+Baglama, James, and Lothar Reichel. Augmented implicitly restarted Lanczos bidiagonalization methods. SIAM Journal on Scientific Computing 27.1 (2005): 19-42.
+\bibitem{irlbam}
+Baglama, James,  {\url{http://www.math.uri.edu/~jbaglama/software/irlba.m}}.
+
+%% Applications in machine learning
+\bibitem{ml1}
+Hall, Mark A. Correlation-based feature selection for machine learning. Diss. The University of Waikato, 1999.
+
+%% IRLBA implementations
+\bibitem{irlbap}
+Kane, Michael and Lewis, Bryan,  \url{https://github.com/bwlewis/irlbpy}.
+
+%% Related use of SVD in neural networks
+\bibitem{neural}
 Levin, Asriel U., Todd K. Leen, and John E. Moody. Fast pruning using principal components. (1993).
-\bibitem{mnl}
-Mueen, A., Nath, S., and Liu, J., Fast approximate correlation for
-massive time-series data, in Proceedings of the 2010 ACM SIGMOD International
-Conference on Management of data, 2010, pp. 171-182.
-\bibitem{xbm}
-Xiong, Hui, Mark Brodie, and Sheng Ma. "Top-cop: Mining top-k strongly correlated pairs in large databases." Data Mining, 2006. ICDM'06. Sixth International Conference on. IEEE, 2006.
-\bibitem{xstk1}
-Xiong, Hui, et al. "Exploiting a support-based upper bound of Pearson's correlation coefficient for efficiently identifying strongly correlated pairs." Proceedings of the tenth ACM SIGKDD international conference on Knowledge discovery and data mining. ACM, 2004.
-\bibitem{xstk2}
-Xiong, Hui, et al. "TAPER: A two-step approach for all-strong-pairs correlation query in large databases." Knowledge and Data Engineering, IEEE Transactions on 18.4 (2006): 493-508.
-\bibitem{zf}
-Zhang, J. and Feigenbaum, J, Finding Highly Correlated Pairs Efficiently with Powerful Pruning,
-in Proceedings of ACM Conference on Information and Knowledge Management (CIKM), 2006, pp. 152-161.
-\bibitem{irlba-R}
-\url{https://cran.r-project.org/web/packages/irlba/index.html}
-\bibitem{irlba-P}
-\url{https://github.com/bwlewis/irlbpy}
-\bibitem{irlba-M}
-\url{http://www.math.uri.edu/~jbaglama/software/irlba.m}
+
+%% IRLBA implementations
+\bibitem{irlbar}
+Lewis, Bryan,  \url{https://cran.r-project.org/web/packages/irlba}.
+
+%% Approximate correlation
+\bibitem{approxcor}
+Mueen, Abdullah, Suman Nath, and Jie Liu. Fast approximate correlation for massive time-series data. Proceedings of the 2010 ACM SIGMOD International Conference on Management of data. ACM, 2010.
+
+%% Applications in genomics
+\bibitem{genomics}
+Song, Lin, Peter Langfelder, and Steve Horvath. Comparison of co-expression measures: mutual information, correlation, and model based indices. BMC bioinformatics 13.1 (2012): 328.
+
+
+%% Other correlation pruning methods
+\bibitem{prune1}
+Xiong, Hui, et al. TAPER: A two-step approach for all-strong-pairs correlation query in large databases. Knowledge and Data Engineering, IEEE Transactions on 18.4 (2006): 493-508.
+\bibitem{prune2}
+Xiong, Hui, Mark Brodie, and Sheng Ma. Top-cop: Mining top-k strongly correlated pairs in large databases. Data Mining, 2006. ICDM'06. Sixth International Conference on. IEEE, 2006.
+
+%% Applications in machine learning
+\bibitem{ml2}
+Yu, Lei, and Huan Liu. Feature selection for high-dimensional data: A fast correlation-based filter solution. ICML. Vol. 3. 2003.
+
+%% Other correlation pruning methods
+\bibitem{prune3}
+Zhang, Jian, and Joan Feigenbaum. Finding highly correlated pairs efficiently with powerful pruning. Proceedings of the 15th ACM international conference on Information and knowledge management. ACM, 2006.
+\bibitem{prune4}
+Zhu, Shiwei, et al. Scaling up top-K cosine similarity search. Data \& Knowledge Engineering 70.1 (2011): 60-83.
+
 \end{thebibliography}
 \end{document}
