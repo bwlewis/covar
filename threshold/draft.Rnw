@@ -58,7 +58,6 @@
 
 
 
-
 \title{Efficient Thresholded Correlation using Truncated Singular Value Decomposition}
 \author{
 J. Baglama\\
@@ -102,8 +101,15 @@ can efficiently compute thresholded subsets of very large correlation matrices.
 
 \section{Introduction}\label{intro}
 
-XXX
-\\
+Finding highly-correlated pairs among a large set of vectors is an important
+part of many applications. For instance, subsets of highly-correlated vectors
+of gene expression values may be used in the discovery networks of genes
+relevant to particular biological processes\cite{genomics}. Identification of
+highly-correlated pairs may be used in feature selection algorithms for machine
+learning applications\cite{ml1, ml2}. The problem is also important to time
+series and image processing applications, see for example\cite{timeseries,
+svd-similarity}.
+
 
 Consider a real-valued data matrix $A$ consisting of $m$ observations of $n$
 column vectors.  Denote the columns of $A$ as $a_j\in\mathcal{R}^m$ for
@@ -213,7 +219,7 @@ complexity of computing thresholded correlation matrices.  Approaches that
 cheaply omit pairs of vectors from consideration are called \emph{pruning
 methods}, and a variety of pruning methods have been described elsewhere for
 the thresholded correlation problem; see, for
-example\cite{prune1, prune2, prune3, prune4}
+example\cite{prune1, prune2, prune3}
 and the references therein.  The approach described here prunes along an
 intuitive path of decreasing variance defined by the data and computed by the
 SVD.
@@ -425,22 +431,22 @@ Hall, Mark A. Correlation-based feature selection for machine learning. Diss. Th
 \bibitem{irlbap}
 Kane, Michael and Lewis, Bryan,  \url{https://github.com/bwlewis/irlbpy}.
 
-%% Related use of SVD in neural networks
-\bibitem{neural}
-Levin, Asriel U., Todd K. Leen, and John E. Moody. Fast pruning using principal components. (1993).
-
 %% IRLBA implementations
 \bibitem{irlbar}
 Lewis, Bryan,  \url{https://cran.r-project.org/web/packages/irlba}.
 
 %% Approximate correlation
-\bibitem{approxcor}
+\bibitem{timeseries}
 Mueen, Abdullah, Suman Nath, and Jie Liu. Fast approximate correlation for massive time-series data. Proceedings of the 2010 ACM SIGMOD International Conference on Management of data. ACM, 2010.
 
 %% Applications in genomics
 \bibitem{genomics}
 Song, Lin, Peter Langfelder, and Steve Horvath. Comparison of co-expression measures: mutual information, correlation, and model based indices. BMC bioinformatics 13.1 (2012): 328.
 
+%% SVD similarity -- extremely similar to the approach in this paper!
+%% Applied to images
+\bibitem{svd-similarity}
+Wu, Daniel, et al. Efficient retrieval for browsing large image databases. Proceedings of the fifth international conference on Information and knowledge management. ACM, 1996.
 
 %% Other correlation pruning methods
 \bibitem{prune1}
@@ -455,8 +461,6 @@ Yu, Lei, and Huan Liu. Feature selection for high-dimensional data: A fast corre
 %% Other correlation pruning methods
 \bibitem{prune3}
 Zhang, Jian, and Joan Feigenbaum. Finding highly correlated pairs efficiently with powerful pruning. Proceedings of the 15th ACM international conference on Information and knowledge management. ACM, 2006.
-\bibitem{prune4}
-Zhu, Shiwei, et al. Scaling up top-K cosine similarity search. Data \& Knowledge Engineering 70.1 (2011): 60-83.
 
 \end{thebibliography}
 \end{document}
