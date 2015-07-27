@@ -98,11 +98,10 @@ thresholded subsets of very large correlation matrices.
 Finding highly-correlated pairs among a large set of vectors is an important
 part of many applications. For instance, subsets of highly-correlated vectors
 of gene expression values may be used in the discovery of networks of genes
-relevant to particular biological processes\cite{genomics}.
-Identification of highly-correlated pairs may be used in feature selection
-algorithms for machine learning applications\cite{ml1, ml2}. It's also
-important to many time series and image processing applications, see for
-example\cite{timeseries, svd-similarity} and references therein.
+relevant to particular biological processes\cite{genomics}.  Identification of
+highly-correlated pairs may be used in feature selection algorithms for machine
+learning applications\cite{ml1, ml2} and are also important to time series
+and image processing applications\cite{timeseries, svd-similarity}.
 
 The number of correlation coefficients grows quadratically with the number of
 vectors. Simply computing all pairs of correlation coefficients and then
