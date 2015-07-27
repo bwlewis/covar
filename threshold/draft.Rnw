@@ -60,13 +60,13 @@
 
 \title{Efficient Thresholded Correlation using Truncated Singular Value Decomposition}
 \author{
-J. Baglama\\
+James Baglama\\
 Department of Mathematics,\\University of Rhode Island
 \and
-B. Lewis\\
+Bryan Lewis\\
 Paradigm4, Inc.\\
 \and
-A. Poliakov\\
+Alex Poliakov\\
 Paradigm4, Inc.
 }
 
@@ -77,24 +77,18 @@ Paradigm4, Inc.
 \SweaveOpts{concordance=TRUE}
 \maketitle
 
-%%<<eval=TRUE, echo=FALSE>>=
-%%Sys.setenv(TEXINPUTS=getwd(),
-%%           BIBINPUTS=getwd(),
-%%           BSTINPUTS=getwd())
-%%@
-
-
 \begin{abstract}
 
 Efficiently computing a subset of a correlation matrix consisting of values
 above a specified threshold is important to many practical applications.
-Real-world problems in genomics, machine learning, finance, and other fields
-can produce correlation matrices too large to explicitly form and tractably
-compute. Often, only values corresponding to highly-correlated vectors are of
-interest, and those values typically make up a small fraction of the overall
-correlation matrix. We present a method based on the singular value
-decomposition (SVD) and its relationship to the data covariance structure that
-can efficiently compute thresholded subsets of very large correlation matrices.
+Real-world problems in genomics, machine learning, financial and other time
+series and other applications can produce correlation matrices
+too large to explicitly form and tractably compute. Often, only values
+corresponding to highly-correlated vectors are of interest, and those values
+typically make up a small fraction of the overall correlation matrix. We
+present a method based on the singular value decomposition (SVD) and its
+relationship to the data covariance structure that can efficiently compute
+thresholded subsets of very large correlation matrices.
 
 \end{abstract}
 
@@ -103,12 +97,28 @@ can efficiently compute thresholded subsets of very large correlation matrices.
 
 Finding highly-correlated pairs among a large set of vectors is an important
 part of many applications. For instance, subsets of highly-correlated vectors
-of gene expression values may be used in the discovery networks of genes
-relevant to particular biological processes\cite{genomics}. Identification of
-highly-correlated pairs may be used in feature selection algorithms for machine
-learning applications\cite{ml1, ml2}. The problem is also important to time
-series and image processing applications, see for example\cite{timeseries,
-svd-similarity}.
+of gene expression values may be used in the discovery of networks of genes
+relevant to particular biological processes\cite{genomics}.
+Identification of highly-correlated pairs may be used in feature selection
+algorithms for machine learning applications\cite{ml1, ml2}. It's also
+important to many time series and image processing applications, see for
+example\cite{timeseries, svd-similarity} and references therein.
+
+The number of correlation coefficients grows quadratically with the number of
+vectors. Simply computing all pairs of correlation coefficients and then
+filtering out coefficients below a given threshold may not be computationally
+feasable for high-dimensional data arising in modern genomics and other
+applications. Considerable attention has been devoted to methods called
+\emph{pruning methods} that cheaply prune away all but the most
+highly-correlated pairs of vectors.  A variety of pruning methods have been
+described for the thresholded correlation problem; see, for
+example\cite{prune1, prune2} and the references therein. Related methods
+approximate a set containing the most highly-correlated pairs\cite{prune3,
+timeseries}. A method of Wu, et al.\cite{svd-similarity}, conceptually very
+similar to our approach, uses the singular value decomposition (SVD) to find
+pairs of close vectors with respect to a distance metric (instead of
+correlation).  Our method described below prunes along an intuitive path of
+decreasing variance defined by the data and computed by the SVD.
 
 
 Consider a real-valued data matrix $A$ consisting of $m$ observations of $n$
@@ -212,17 +222,9 @@ consideration whenever their projected distance is too large.  For example if
 $\sigma_1^2 |e_i^Tv_{1} - e_j^Tv_{1}|^2 \ge 2(1-t)$, then we can conclude from
 just two scalar values that the column vectors $a_i$ and $a_j$ do not meet the
 correlation threshold $t$.
-
-In practice, many pairs of vectors may be ruled out in this fashion by
+In practice, many pairs of vectors may be pruned in this fashion by
 inspecting distances in low-dimensional subspaces, substantially reducing the
-complexity of computing thresholded correlation matrices.  Approaches that
-cheaply omit pairs of vectors from consideration are called \emph{pruning
-methods}, and a variety of pruning methods have been described elsewhere for
-the thresholded correlation problem; see, for
-example\cite{prune1, prune2, prune3}
-and the references therein.  The approach described here prunes along an
-intuitive path of decreasing variance defined by the data and computed by the
-SVD.
+complexity of computing thresholded correlation matrices.
 
 \section{Efficient pruning using the truncated SVD}
 
