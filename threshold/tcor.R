@@ -3,7 +3,6 @@
 # As of 20-July, 2015 this needs the development version of irlba available
 # from GitHub: devtools::install_github("bwlewis/IRL")
 require(irlba)
-require(zoo)   # for rollapply
 
 #' Compute the thresholded correlations between columns of a matrix.
 #'
@@ -24,7 +23,9 @@ tcor = function(A, t=0.99, p=5)
   P  = order(L$v[,1])  # order the entries of v1 (the permutation in the paper)
   limit = sqrt(2*(1-t))/L$d[1]
 # XXX this is stupid, find a better way ('l' in the paper):
-  max_group_size  = max(rollapply(L$v[P,1], width=nrow(A), FUN=function(x) sum(x-x[1] <= limit), align="left", partial=TRUE))
+  v = L$v[P,1]
+  max_group_size = max(vapply(1:length(v), function(i) {x=v[-(1:i)];sum(x-x[1] <= limit)}, 1))
+
 cat("longest run of adjacent points within threshold l =",max_group_size,"\n")
 
 # this is the big union in step 4 of algorithm 2.1, combined with step 6 to
@@ -50,11 +51,12 @@ C = cor(A)                     # actual correlation matrix for reference
 C[lower.tri(C,diag=TRUE)] = 0  # cut out symmetric part and ones on diagonal
 
 # Compute candidate pairs with the new algorithm
-x = tcor(A, t=0.95, p=10)
+t = 0.95
+x = tcor(A, t=t, p=10)
 
 # Compare
 # First note, there are 115 pairs with better than 0.95 correlation:
-sum(C>0.95)
+sum(C>t)
 
 # and our algorithm with p=10 returns a list of 431 possible candidates:
 dim(x)
@@ -71,7 +73,7 @@ x[i,] = x[i,2:1]
 candidates = apply(x,1,paste,collapse=",")
 
 # Now the actual list of correlated pairs as strings (already ordered):
-actual = apply(which(C>0.95, arr.ind=TRUE),1,paste,collapse=",")
+actual = apply(which(C>t, arr.ind=TRUE),1,paste,collapse=",")
 
 # Now check that all the actual correlated pairs are accounted for in the
 # candidates:
