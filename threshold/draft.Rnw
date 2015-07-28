@@ -110,14 +110,20 @@ feasable for high-dimensional data arising in modern genomics and other
 applications. Considerable attention has been devoted to methods called
 \emph{pruning methods} that cheaply prune away all but the most
 highly-correlated pairs of vectors.  A variety of pruning methods have been
-described for the thresholded correlation problem; see, for
-example\cite{prune1, prune2} and the references therein. Related methods
-approximate a set containing the most highly-correlated pairs\cite{prune3,
-timeseries}. A method of Wu, et al.\cite{svd-similarity}, conceptually very
-similar to our approach, uses the singular value decomposition (SVD) to find
-pairs of close vectors with respect to a distance metric (instead of
-correlation).  Our method described below prunes along an intuitive path of
-decreasing variance defined by the data and computed by the SVD.
+described for the thresholded correlation problem.  For example the TAPER and
+related algorithms of Xiong et al. base pruning rules on the frequency of
+mutually co-ocurring observations (rows) among vector pairs; see \cite{prune1,
+prune2} and the references therein. Related methods only approximate a set
+containing the most highly-correlated pairs using hashing
+algorithms\cite{prune3}. A number of other methods arrive at approximate sets
+of the most highly-correlated paris using dimensionality-reduction techniques
+like the discrete Fourier transform\cite{timeseries}. The method of Wu, et
+al.\cite{svd-similarity}, conceptually very similar to our approach, uses the
+singular value decomposition (SVD) to find all pairs of close vectors with
+respect to a distance metric (instead of correlation).  Our method finds all of
+the most highly-correlated vector pairs with respect to a given threshold by
+pruning along an intuitive path of decreasing variance defined by the data and
+computed by the SVD.
 
 
 Consider a real-valued data matrix $A$ consisting of $m$ observations of $n$
@@ -127,7 +133,7 @@ let $k=\mathrm{rank}(A)$.  Assume that the mean of each column $a_j$ is zero
 and that each column has unit norm $\|a_j\| = 1$. Here and below, $\|\cdot\|$
 denotes the Euclidean vector norm. Then the Pearson sample correlation matrix
 $\mathrm{cor}(A)=A^TA$.  Note that under these assumptions the sample
-correlation and covariance matrices are the same.  Section \ref{irlba} below
+correlation and covariance matrices are the same.  Section \ref{irlba}
 illustrates how to relax the unit norm and zero mean assumptions in practice.
 
 Let $A=U\Sigma V^T$ be the singular value decomposition of $A$, where
@@ -151,6 +157,7 @@ establishes a relationship between correlation and Euclidean distance between
 two vectors.
 
 \begin{lemma}
+\label{distlemma}
 Let $a_i$ and $a_j$, $1\le i,j\le n$ be any two columns of the matrix
 $A$. Then
 \begin{equation}\label{cordist}
@@ -170,7 +177,7 @@ $\mathrm{cor}(a_i, a_j) < t$.
 %%The lemma follows by solving for $a_i^Ta_j$.
 %%\end{proof}
 
-Equation \ref{cordist} equates the problem of finding pairs of highly
+Lemma \ref{distlemma} equates the problem of finding pairs of highly
 correlated column vectors from the matrix $A$ with a problem of finding paris
 of vectors sufficiently close together. For example, correlation values larger
 than 0.99 may only be associated with column vectors from the matrix $A$ whose
@@ -225,13 +232,13 @@ In practice, many pairs of vectors may be pruned in this fashion by
 inspecting distances in low-dimensional subspaces, substantially reducing the
 complexity of computing thresholded correlation matrices.
 
-\section{Efficient pruning using the truncated SVD}
+\section{Efficient pruning using truncated SVD}
 
 Let $t$ be a given correlation threshold $0<t<1$, and let
 $P\in\mathcal{R}^{n\times n}$ be a permutation matrix that orders then entries
 of $v_1$ in increasing order.  It follows from Equations \ref{cordist} and
-\ref{vdist} that for any $i,j=1,2,\ldots,n$, if $\sigma_1^2 |e_i^Tv_{1} -
-e_j^Tv_{1j}|^2 > 2(1-t)$ then $\mathrm{cor}(a_i,a_j) < t$.  Let $\ell$ be the
+\ref{vdist} that for any $i,j=1,2,\ldots,n$, if $\sigma_1^2 |e_i^Tv_1 -
+e_j^Tv_1|^2 > 2(1-t)$ then $\mathrm{cor}(a_i,a_j) < t$.  Let $\ell$ be the
 longest run of successive points in $P v_1$ within the interval
 $\sqrt{2(1-t)}/\sigma_1$. For example, Figure \ref{fig1} displays the entries
 of $v_1$ for the small ``BicatYeast'' example (where $A\in\mathcal{R}^{70\times
@@ -309,11 +316,11 @@ matrix $V$, $s_{1:p}$ the vector of the first $p$ singular values.
 Pairs of vectors below the correlation threshold that lie more than one index
 difference apart relative to the permutation $P$ can be similarly pruned by
 replacing $D^1$ with $D^j$, $j=2,3,\ldots,\ell$ in the above expressions.
-Following this process, we can produce a well-pruned candidate set of possible
-vector pairs that meet a given correlation threshold using $\ell$ matrix vector
-products with matrices of order $n \times p$, where $p$ is chosen in practice
-such that $p<<k$. Setting $p=10$ for the example shown in Figure
-\ref{fig1} prunes all but $431$ possible vector pairs out of a total
+Following this process, we can produce a well-pruned candidate set of vector
+pairs that contains all pairs that meet a given correlation threshold using
+$\ell$ matrix vector products with matrices of order $n \times p$, where $p$ is
+chosen in practice such that $p<<k$. Setting $p=10$ for the example shown in
+Figure \ref{fig1} prunes all but $431$ possible vector pairs out of a total
 $419(419-1)/2 = 87,571$ with $\ell=138$.
 
 These steps are formalized in Algorithm \ref{prune} below. The algorithm
