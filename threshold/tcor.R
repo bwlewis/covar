@@ -40,7 +40,7 @@ cat("longest run of adjacent points within threshold l =",ell,"\n")
   {
     d = diff(L$v[P,1:p,drop=FALSE],lag=i)^2 %*% L$d[1:p]^2
     j = which(d <= 2*(1-t))  # These ordered indices meet the threshold
-    dnum[i] = length(j)      # Record the number of them
+    dnum[i] <<- length(j)    # Record the number of them
     # return original un-permuted column indices
     cbind(P[j], P[j+i])
   })
