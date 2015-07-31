@@ -419,7 +419,49 @@ at most computing two additional vector inner products per matrix-vector product
 
 \section{Conclusion}\label{conclusion}
 
+\section{The distribution of $||a_i - a_j||^2$}
 
+\begin{lemma}
+\label{asymdistm1lemma}
+Let $m=1$, $X_i$ and $X_j$ be distributed as $\mathcal{N}(0, \Delta_{ij})$,
+with $\Delta_{ii} = 1$.  Then
+\begin{equation}
+\label{eqasymdist1}
+|| X_i - X_j ||^2 \sim R + \frac{\Delta_{ij} + 1}{2} S + 
+  \frac{\Delta_{ij} - 1}{2} T
+\end{equation}
+where $R$ is distributed as $\chi_2^2$ and $S$ and $T$ are $\chi_1^2$.
+\end{lemma}
+\begin{proof}
+\begin{equation*}
+||X_i - X_j||^2 = X_i^2 - 2 X_i X_j + X_j^2
+\end{equation*}
+$X_i^2$ and $X_j^2$ are clearly $\chi_1^2$. To derive the distribution
+of the cross-product term realize
+\begin{equation*}
+X_i X_j = \frac{1}{4} \left(X_i + X_j\right)^2 - 
+  \frac{1}{4} \left(X_i - X_j\right)^2.
+\end{equation*}
+$X_i + X_j$ and $X_i - X_j$ are both distributed as normal and they are 
+independent
+since $\mathbf{E}X_1^2 = \mathbf{E}X_2^2$. Therefore, their squares
+are $\chi_1^2$ and the leading coefficients in Equation \ref{eqasymdist1}
+are the respective variances.
+\end{proof}
+
+\begin{lemma}
+\label{asymdistlemma}
+Let $a_i$ and $a_j$ be any two columns of the matrix 
+$B \in \mathcal{R}^{m \times n}$, sampled from 
+$\mathcal{N}(0, \Delta/m)$ where $\Delta_{ii} = 1$ for $1 \leq i \leq n$.
+Then
+\begin{equation*}
+||a_i - a_j||^2 \xrightarrow[m]{D} \mathcal{N} \left(2 + \Delta_{ij},  
+  \frac{5 + \Delta_{ij}^2}{m} \right) 
+\end{equation*}
+\end{lemma}
+This result follows by applying the central limit theorem to
+the result in Lemma \ref{asymdistm1lemma} where $m$ is appropriately large.
 
 \begin{thebibliography}{99}
 
