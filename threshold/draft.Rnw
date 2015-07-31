@@ -427,8 +427,8 @@ Let $m=1$, $X_i$ and $X_j$ be distributed as $\mathcal{N}(0, \Delta_{ij})$,
 with $\Delta_{ii} = 1$.  Then
 \begin{equation}
 \label{eqasymdist1}
-|| X_i - X_j ||^2 \sim R + \frac{\Delta_{ij} + 1}{2} S + 
-  \frac{\Delta_{ij} - 1}{2} T
+|| X_i - X_j ||^2 \sim R + \left(\Delta_{ij} + 1 \right) S + 
+  \left(\Delta_{ij} - 1 \right) T
 \end{equation}
 where $R$ is distributed as $\chi_2^2$ and $S$ and $T$ are $\chi_1^2$.
 \end{lemma}
