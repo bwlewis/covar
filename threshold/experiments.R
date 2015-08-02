@@ -14,7 +14,12 @@ C[lower.tri(C,diag=TRUE)] = 0  # cut out symmetric part and ones on diagonal
 x2  = tcor(A,t,p=2)
 x4  = tcor(A,t,p=4)
 x8  = tcor(A,t,p=8)
+x20 = tcor(A,t,p=20)
+x24 = tcor(A,t,p=24)
 x32 = tcor(A,t,p=32)
+
+d = function(i) diag(s$v[,1:i] %*% diag(s$d[1:i]^2) %*% t(s$v[,1:i]))
+
 
 
 par(mfrow=c(2,2))

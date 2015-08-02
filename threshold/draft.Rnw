@@ -285,7 +285,7 @@ Even a 1-d projected interval distance threshold may prune many possible
 non-adjacent vector pairs with respect to the ordering defined by $P$ as
 illustrated by the example in Figure \ref{fig1}.  However, this observation is
 unlikely to rule out many adjacent pairs of vectors in most problems.  For
-instance, the minimum distance between the points shown in the example in
+instance, the maximum distance between adjacent points shown in the example in
 Figure \ref{fig1} is less than $\sqrt{2(1-t)}/\sigma_1$, and no pruning occurs.
 
 Including more terms from Equation \ref{vdist} increases our ability to prune
