@@ -63,6 +63,9 @@
 James Baglama\\
 Department of Mathematics,\\University of Rhode Island
 \and
+Michael Kane\\
+Yale University
+\and
 Bryan Lewis\\
 Paradigm4, Inc.\\
 \and
@@ -334,7 +337,8 @@ Input: data matrix $A\in \mathcal{R}^{m\times n}$ with columns scaled to have
 zero mean and unit norm, correlation threshold $t$,
 truncated SVD rank $p<<k$.
 \begin{enumerate}
-\item Compute the truncated SVD $AV_{1:p} = U_{1:p}\mathrm{diag}(s_{1:p})$,
+\item Compute the truncated SVD
+$AV_{1:p} = U_{1:p}\mathrm{diag}(s_{1:p})$,
 where\\
 $V_{1:p}=[v_1, v_2, \ldots, v_p]$
 and $\mathrm{diag}(s_{1:p})$ denotes the diagonal matrix of the first $p$ singular values.
@@ -348,8 +352,10 @@ and $\mathrm{diag}(s_{1:p})$ denotes the diagonal matrix of the first $p$ singul
 e_{\tilde{j}}^T(D^{\tilde{i}} P V_{1:p} )^2 s_{1:p}^2 \le 2(1-t)
 \right\}.
 \]
-\item If there are judged to be  ``too many'' candidate pairs, increase $p$ and go to
-step 1. Continue to increase $p$ in this way until the number of candidate
+\item If there are judged to be  ``too many'' candidate pairs, increase $p$ and
+restart IRLBA to compute 
+$AV_{1:p} = U_{1:p}\mathrm{diag}(s_{1:p})$ and go to step 4.
+Continue to increase $p$ in this way until the number of candidate
 pairs is sufficiently small or stops decreasing (the best this algorithm can do).
 \item Recover the non-permuted candidate column vector
 indices $(j,i)$ from $j=e_{\tilde{j}}^T Pq$ and $i=e_{\tilde{j}+\tilde{i}}^TPq$ for every
@@ -388,12 +394,12 @@ of Baglama and Reichel \cite{irlba} efficiently computes truncated singular valu
 decompositions of large dense or sparse matrices. Reference implementations are
 available for R\cite{irlbar}, Matlab\cite{irlbam}, and Python\cite{irlbap}.
 
-We relax the column mean and scale assumptions without introducing much additional
-computational or storage overhead as follows.  Let
+We can relax the column mean and scale assumptions without introducing much
+additional computational or storage overhead as follows.  Let
 $z=[z_1,z_2,\ldots,z_n]\in\mathcal{R}^n$ represent the vector of column means
-of the matrix $A$, $w=[w_1^2,w_2^2,\ldots,w_n^2]\in\mathcal{R}^n$ be the vector
-of squared column norms of $A$, and $W\in\mathcal{R}^{n\times n}$ a diagonal
-matrix with diagonal entries $1/\sqrt{w_i^2 - m z_i^2}$.  Let
+of the $m\times n$ matrix $A$, $w=[w_1^2,w_2^2,\ldots,w_n^2]\in\mathcal{R}^n$
+be the vector of squared column norms of $A$, and $W\in\mathcal{R}^{n\times n}$
+a diagonal matrix with diagonal entries $1/\sqrt{w_i^2 - m z_i^2}$.  Let
 $e\in\mathcal{R}^m$ be a vector of all ones.  Then $(A - ez^T)W$ is a centered
 matrix with zero column means and scaled to have unit column norms, and
 \[
@@ -417,7 +423,6 @@ at most computing two additional vector inner products per matrix-vector product
 %%@
 
 
-\section{Conclusion}\label{conclusion}
 
 \section{The distribution of $||a_i - a_j||^2$}
 
@@ -462,6 +467,15 @@ Then
 \end{lemma}
 This result follows by applying the central limit theorem to
 the result in Lemma \ref{asymdistm1lemma} where $m$ is appropriately large.
+
+\section{Conclusion}\label{conclusion}
+
+
+
+
+
+
+
 
 \begin{thebibliography}{99}
 
