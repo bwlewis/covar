@@ -119,7 +119,7 @@ mutually co-ocurring observations (rows) among vector pairs; see \cite{prune1,
 prune2} and the references therein. Related methods only approximate a set
 containing the most highly-correlated pairs using hashing
 algorithms\cite{prune3}. A number of other methods arrive at approximate sets
-of the most highly-correlated paris using dimensionality-reduction techniques
+of the most highly-correlated pairs using dimensionality-reduction techniques
 like the discrete Fourier transform\cite{timeseries}. The method of Wu, et
 al.\cite{svd-similarity}, conceptually very similar to our approach, uses the
 singular value decomposition (SVD) to find all pairs of close vectors with
@@ -181,7 +181,7 @@ $\mathrm{cor}(a_i, a_j) < t$.
 %%\end{proof}
 
 Lemma \ref{distlemma} equates the problem of finding pairs of highly
-correlated column vectors from the matrix $A$ with a problem of finding paris
+correlated column vectors from the matrix $A$ with a problem of finding pairs
 of vectors sufficiently close together. For example, correlation values larger
 than 0.99 may only be associated with column vectors from the matrix $A$ whose
 Euclidean distance is less than $\sqrt{0.02}$.  Vectors farther apart can not
@@ -250,7 +250,7 @@ illustrate the interval associated with the correlation threshold $t=0.95$. The
 quantity $\ell$ is obtained by rolling the interval across all the points in
 the plot and counting the maximum number of points that lie within the
 interval.  With respect to the ordering $P$, $\ell$ represents the biggest
-index difference that paris of indices corresponding to correlated vectors
+index difference that pairs of indices corresponding to correlated vectors
 above the threshold can exhibit.
 
 \begin{figure}[!ht]
