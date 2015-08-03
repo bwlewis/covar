@@ -195,9 +195,9 @@ Let $a_i$ and $a_j$, $1\le i,j\le n$ be any two columns of the matrix
 $A$. Then
 \begin{equation}\label{vdist}
 \|a_i - a_j\|^2 =
-\sigma_1^2 |e_i^Tv_{1} - e_j^Tv_{1}|^2 + 
-\sigma_2^2 |e_i^Tv_{2} - e_j^Tv_{2}|^2 + \cdots + 
-\sigma_k^2 |e_i^Tv_{ki} - e_j^Tv_{k}|^2,
+\sigma_1^2 (e_i^Tv_{1} - e_j^Tv_{1})^2 + 
+\sigma_2^2 (e_i^Tv_{2} - e_j^Tv_{2})^2 + \cdots + 
+\sigma_k^2 (e_i^Tv_{ki} - e_j^Tv_{k})^2,
 \end{equation}
 \end{lemma}
 where here and below, $e_{j}\in\mathcal{R}^n$ represents the $j$th unit basis
@@ -228,7 +228,7 @@ $j=1,2,\ldots,k$ are nonincreasing and defined by the covariance structure of
 the data.  Given a correlation threshold $t$, $0<t<1$, Equations \ref{cordist}
 and \ref{vdist} together suggest that pairs of vectors can be excluded from
 consideration whenever their projected distance is too large.  For example if
-$\sigma_1^2 |e_i^Tv_{1} - e_j^Tv_{1}|^2 > 2(1-t)$, then we can conclude from
+$\sigma_1^2 (e_i^Tv_{1} - e_j^Tv_{1})^2 > 2(1-t)$, then we can conclude from
 just two scalar values that the column vectors $a_i$ and $a_j$ do not meet the
 correlation threshold $t$.
 In practice, many pairs of vectors may be pruned in this fashion by
@@ -240,8 +240,8 @@ complexity of computing thresholded correlation matrices.
 Let $t$ be a given correlation threshold $0<t<1$, and let
 $P\in\mathcal{R}^{n\times n}$ be a permutation matrix that orders then entries
 of $v_1$ in increasing order.  It follows from Equations \ref{cordist} and
-\ref{vdist} that for any $i,j=1,2,\ldots,n$, if $\sigma_1^2 |e_i^Tv_1 -
-e_j^Tv_1|^2 > 2(1-t)$ then $\mathrm{cor}(a_i,a_j) < t$.  Let $\ell$ be the
+\ref{vdist} that for any $i,j=1,2,\ldots,n$, if $\sigma_1^2 (e_i^Tv_1 -
+e_j^Tv_1)^2 > 2(1-t)$ then $\mathrm{cor}(a_i,a_j) < t$.  Let $\ell$ be the
 longest run of successive points in $P v_1$ within the interval
 $\sqrt{2(1-t)}/\sigma_1$. For example, Figure \ref{fig1} displays the entries
 of $v_1$ for the small ``BicatYeast'' example (where $A\in\mathcal{R}^{70\times
