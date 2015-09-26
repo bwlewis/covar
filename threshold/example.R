@@ -26,6 +26,9 @@ dim(x)
 # pair (15,3) might be listed but not the equivalent redundant pair (3,15).
 # We account for that and build the following list of candidate
 # pairs in order so that the first coordinate is less than the second:
+check = function(x,C)
+{
+x = x[[1]]
 i = which(x[,2] < x[,1])
 x[i,] = x[i,2:1]
 # Express the coordinates as strings
@@ -36,5 +39,7 @@ actual = apply(which(C>t, arr.ind=TRUE),1,paste,collapse=",")
 
 # Now check that all the actual correlated pairs are accounted for in the
 # candidates:
-length(intersect(actual, ans$candidates))
+print(length(actual))
+print(length(intersect(actual, ans)))
 # It's 115, so all the actual correlated pairs were found (plus some extra)!
+}

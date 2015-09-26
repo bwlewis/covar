@@ -197,7 +197,7 @@ $A$. Then
 \|a_i - a_j\|^2 =
 \sigma_1^2 (e_i^Tv_{1} - e_j^Tv_{1})^2 + 
 \sigma_2^2 (e_i^Tv_{2} - e_j^Tv_{2})^2 + \cdots + 
-\sigma_k^2 (e_i^Tv_{ki} - e_j^Tv_{k})^2,
+\sigma_k^2 (e_i^Tv_{k} - e_j^Tv_{k})^2,
 \end{equation}
 \end{lemma}
 where here and below, $e_{j}\in\mathcal{R}^n$ represents the $j$th unit basis
@@ -350,8 +350,9 @@ and $\mathrm{diag}(s_{1:p})$ denotes the diagonal matrix of the first $p$ singul
 \left\{
 (\tilde{j},\tilde{j}+\tilde{i}) : 
 e_{\tilde{j}}^T(D^{\tilde{i}} P V_{1:p} )^2 s_{1:p}^2 \le 2(1-t)
-\right\}.
+\right\},
 \]
+where $\tilde{j}=1,2,\ldots,n-\tilde{i}$.
 \item If there are judged to be  ``too many'' candidate pairs, increase $p$ and
 restart IRLBA to compute 
 $AV_{1:p} = U_{1:p}\mathrm{diag}(s_{1:p})$ and go to step 4.
@@ -424,6 +425,49 @@ at most computing two additional vector inner products per matrix-vector product
 
 
 
+
+\section{NOTES}
+
+A full/naive thresholded correlation requires $O(n^2 m)$ flops. Let $p$ be the
+selected IRLBA dimension. Then the proposed method requires $O(\ell  n  p)$
+flops, where $\ell$ is the longest run of ordered entries in $v_1$ that meet
+the 1-d projected distance threshold $\sqrt{2(1-t)}/\sigma_1$ (not counting
+from flops due to IRLBA and the post-processing step of evaluating the
+correlation of all the candidate pairs).  One problem with the method as
+written is that $\ell$ can a large fraction of n.
+
+Unnecessarily large values of $\ell$ are due to the loose bound
+$\sqrt{2(1-t)}/\sigma_1$ used in step 3 of Algorithm\ref{prune} which is only
+sharp when $k=1$. General problems may not need to run through differencing
+steps up to $\ell$ in step 4 of the algorithm. We can further improve the
+efficiency of the algorithm by dynamically reducing $\ell$ in step 4 as
+follows.
+
+Equation \ref{vdist} expresses the Euclidean distance between any two columns
+of the matrix $A$ in terms of singular components. Write the smallest squared
+gap between entries of a particular singular vector $v_h$ as:
+\[
+\delta_h = \min_{i,j} (e_i^T v_h - e_j^T v_h)^2.
+\]
+Then note that
+\begin{equation}\label{mindist}
+\|a_i - a_j\|^2 \ge \sigma_1^2 \delta_1 + \sigma_2^2 \delta_2 + \cdots + \sigma_k^2\delta_k,
+\end{equation}
+for any indices $i,j$.
+
+Fix $1\le \tilde{i}\le \ell$ and let $\nu \in R^p$ be the vector of minimum values in
+each column of the $n\times p$ matrix $D^{\tilde{i}}PV_{1:p}$ from step 4 of
+the algorithm.
+It follows from Equation \ref{mindist} that
+\[
+e_{\tilde{j}}^T(D^{\tilde{i}} P V_{1:p} )^2 s_{1:p}^2 \ge \nu^Ts_{1:p}
+\]
+for all $\tilde{j}=1,2,\ldots,n$.
+
+XXX need monotonicity of $\nu^Ts_{1:p}$ XXX
+
+
+
 \section{The distribution of $||a_i - a_j||^2$}
 
 \begin{lemma}
@@ -467,6 +511,12 @@ Then
 \end{lemma}
 This result follows by applying the central limit theorem to
 the result in Lemma \ref{asymdistm1lemma} where $m$ is appropriately large.
+
+
+
+
+
+
 
 \section{Conclusion}\label{conclusion}
 
