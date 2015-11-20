@@ -103,19 +103,19 @@ part of many applications. For instance, subsets of highly-correlated vectors
 of gene expression values may be used in the discovery of networks of genes
 relevant to particular biological processes\cite{genomics}.  Identification of
 highly-correlated pairs may be used in feature selection algorithms for machine
-learning applications\cite{ml1, ml2} and are also important to time series and
+learning applications\cite{ml1, ml2} and are important to time series and
 image processing applications\cite{timeseries, svd-similarity}.
 
 The number of correlation coefficients grows quadratically with the number of
 vectors. Simply computing all pairs of correlation coefficients and then
 filtering out coefficients below a given threshold may not be computationally
 feasable for high-dimensional data in modern genomics and other applications.
-Considerable attention has been devoted to methods called \emph{pruning
+Considerable attention has been devoted to \emph{pruning
 methods} that cheaply prune away all but the most highly-correlated pairs of
-vectors.  For example the TAPER and related algorithms of Xiong et al. base
-pruning rules on the frequency of mutually co-ocurring observations (rows)
+vectors.  For example the TAPER and related algorithms of Xiong et al. develop
+pruning rules based on the frequency of mutually co-ocurring observations (rows)
 among vector pairs; see \cite{prune1, prune2} and the references therein.
-Related methods only approximate a set containing the most highly-correlated
+Related methods approximate a set containing the most highly-correlated
 pairs using hashing algorithms\cite{prune3}. A number of other methods arrive
 at approximate sets of the most highly-correlated pairs using
 dimensionality-reduction techniques like the discrete Fourier
@@ -135,8 +135,9 @@ let $k=\mathrm{rank}(A)$.  Assume that the mean of each column $a_j$ is zero
 and that each column has unit norm $\|a_j\| = 1$. Here and below, $\|\cdot\|$
 denotes the Euclidean vector norm. Then the Pearson sample correlation matrix
 $\mathrm{cor}(A)=A^TA$.  Note that under these assumptions the sample
-correlation and covariance matrices are the same.  Section \ref{irlba}
-illustrates how to relax the unit norm and zero mean assumptions in practice.
+correlation and covariance matrices are the same up to a constant multiple.
+Section \ref{irlba} illustrates how to relax the unit norm and zero mean
+assumptions in practice.
 
 Let $A=U\Sigma V^T$ be a singular value decomposition of $A$, where
 $U\in\mathcal{R}^{m\times k}$, $V\in\mathcal{R}^{n\times k}$,
@@ -183,15 +184,15 @@ Lemma \ref{distlemma} equates the problem of finding pairs of highly correlated
 column vectors from the matrix $A$ with a problem of finding pairs of vectors
 sufficiently close together. For example, correlation values larger than 0.99
 may only be associated with column vectors from the matrix $A$ whose Euclidean
-distance is less than $\sqrt{0.02}$.  Vectors farther apart can not meet the
-correlation threshold.
+distance is less than $\sqrt{0.02}$.
 
 The following lemma expresses the Euclidean distance between any two columns of
 the matrix $A$ as a weighted sum of projected interval distances along the SVD
 basis vectors forming the columns of $V$.
 \begin{lemma}
-Let $a_i$ and $a_j$, $1\le i,j\le n$ be any two columns of the matrix
-$A$. Then
+Let $a_i$ and $a_j$
+be any two columns of the matrix
+$A$, $1\le i,j\le n$. Then
 \begin{equation}\label{vdist}
 \|a_i - a_j\|^2 =
 \sigma_1^2 (e_i^Tv_{1} - e_j^Tv_{1})^2 + 
@@ -280,7 +281,8 @@ non-adjacent vector pairs with respect to the ordering defined by $P$ as
 illustrated by the example in Figure \ref{fig1}.  However, this observation is
 unlikely to rule out many adjacent pairs of vectors in most problems.  For
 instance, the maximum distance between adjacent points shown in the example in
-Figure \ref{fig1} is less than $\sqrt{2(1-t)}/\sigma_1$, and no pruning occurs.
+Figure \ref{fig1} is less than $\sqrt{2(1-t)}/\sigma_1$, and no pruning of
+adjacent pairs of vectors with respect to the ordering $P$ occurs.
 
 Including more terms from Equation \ref{vdist} increases our ability to prune
 adjacent pairs of vectors
@@ -369,13 +371,13 @@ decrease in proportion to variability in the data, it's often reasonable to
 judge whether there are ``too many'' candidate pairs (step 5) after only a 1-d
 projection $\tilde{i}=1$ in step 4 of the algorithm.
 
-Algorithm \ref{prune} by construction guarantees that no pruned vector pair
-exceeds the given correlation threshold; that is, the pruning can not produce
-any false negatives.  The algorithm typically prunes the vast majority of pairs
-of vectors below the correlation threshold with truncated singular value
-decompositions of only relatively low rank $p$.  The choice of $p$ is a balance
-between work in computing a truncated SVD and work required by the $\ell$
-matrix vector products of order $n\times p$ in step 4.
+Algorithm \ref{prune} guarantees that no pruned vector pair exceeds the given
+correlation threshold--the pruning does not produce false negatives.
+The algorithm typically prunes the vast majority of pairs of vectors below the
+correlation threshold with truncated singular value decompositions of only
+relatively low rank $p$.  The choice of $p$ represents a balance between work in
+computing a truncated SVD and work required by the $\ell$ matrix vector
+products of order $n\times p$ in step 4.
 
 
 
@@ -390,7 +392,7 @@ method should be able to cheaply restart to compute additional singular vectors
 as required in step 5 of Algorithm \ref{prune}. Fortunately all desires are met
 by one algorithm.
 
-The augmented implicitly restarted Lanczos bidiagonalization algorithm (IRLBA)
+The augmented implicitly restarted Lanczos bidiagonalization algorithm\break(IRLBA)
 of Baglama and Reichel \cite{irlba} efficiently computes truncated singular value
 decompositions of large dense or sparse matrices. Reference implementations are
 available for R\cite{irlbar}, Matlab\cite{irlbam}, and Python\cite{irlbap}.
