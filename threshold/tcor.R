@@ -2,14 +2,16 @@ require(irlba)
 require(parallel)
 #' Compute the thresholded correlations between columns of a matrix.
 #'
-#' Increase p to cut down the total number of candate pairs.
+#' Increase p to cut down the total number of candidate pairs evaluated,
+#' at the expense of costlier truncated SVDs.
 #'
 #' @param A an m by n real-valued dense or sparse matrix
 #' @param t a threshold value for correlation
 #' @param p projected subspace dimension
 #'
-#' @return A two-column matrix. Each row of the matrix are the
-#' column indices of vectors that meet the correlation threshold.
+#' @return A three-column matrix. The first two columns contain
+#' indices of vectors meeting the correlation threshold \code{t},
+#' and the third column contains the corresponding correlation value.
 tcor = function(A, t=0.99, p=5)
 {
   mu = colMeans(A)
@@ -24,15 +26,19 @@ tcor = function(A, t=0.99, p=5)
 
 # This is the big union in step 4 of algorithm 2.1, combined with step 6 to
 # convert back to original indices, and step 7 to evaluate the candiadtes.
-# Each step from 1 to \ell is independent of the others; the steps may be run
-# in parallel.
+# Each step from 1 to \ell is independent of the others; the steps can run
+# in parallel:
   indices = mclapply(1:ell, function(i)
   {
     d = diff(L$v[P,1:p,drop=FALSE],lag=i)^2 %*% L$d[1:p]^2
     j = which(d <= 2*(1-t))  # These ordered indices meet the threshold
     # return original un-permuted column indices that meet threshold (step 7)
-    if(length(j) > 0) j = j[vapply(j, function(k) cor(A[,P[k]], A[,P[k+i]]) >= t, TRUE)]
-    cbind(P[j], P[j+i])
+    if(length(j) == 0) return()
+    v = vapply(j, function(k) cor(A[, P[k]], A[, P[k+i]]), 1)
+    h = v >= t
+    j = j[h]
+    v = v[h]
+    cbind(i=P[j], j=P[j+i], cor=v)
   })
   Reduce(rbind,indices)
 }
