@@ -9,9 +9,17 @@ require(parallel)
 #' @param t a threshold value for correlation
 #' @param p projected subspace dimension
 #'
-#' @return A three-column matrix. The first two columns contain
-#' indices of vectors meeting the correlation threshold \code{t},
-#' and the third column contains the corresponding correlation value.
+#' @return A list with three elements:
+#' \enumerate{
+#'   \item \code{cor} A three-column matrix such that the  first two columns contain
+#'         indices of vectors meeting the correlation threshold \code{t},
+#'         and the third column contains the corresponding correlation value.
+#'   \item \code{longest_run} The largest number of successive entries in the
+#'     ordered first singular vector within a projected distance defined by the
+#'     correlation threshold.
+#'   \item \code{candidates} The total number of _possible_ vectors that meet
+#'     the correlation thrshold identified by the algorithm.
+#' }
 tcor = function(A, t=0.99, p=5)
 {
   mu = colMeans(A)
@@ -43,13 +51,22 @@ tcor = function(A, t=0.99, p=5)
   {
     d = diff(L$v[P, 1:p, drop=FALSE], lag=i) ^ 2 %*% L$d[1:p] ^ 2
     j = which(d <= 2 * (1 - t))  # These ordered indices meet the threshold
+    n = length(j)
     # return original un-permuted column indices that meet threshold (step 7)
-    if(length(j) == 0) return()
+    # including the number of possible candidates
+    if(n == 0)
+    {
+      ans = vector("list", 2)
+      names(ans) = c("idx", "n")
+      ans$n = n
+      return(ans)
+    }
     v = vapply(j, function(k) cor(A[, P[k]], A[, P[k+i]]), 1)
     h = v >= t
     j = j[h]
     v = v[h]
-    cbind(i=P[j], j=P[j + i], cor=v)
+    return(list(idx=cbind(i=P[j], j=P[j + i], cor=v), n=n))
   })
-  Reduce(rbind, indices)
+  list(cor=Reduce(rbind, Map(function(x) x$idx, indices)), longest_run=ell,
+         candidates=Reduce(sum, Map(function(x) x$n, indices)))
 }
