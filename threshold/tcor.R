@@ -20,9 +20,21 @@ tcor = function(A, t=0.99, p=5)
   P  = order(L$v[,1])  # order the entries of v1 (the permutation in the paper)
   limit = sqrt(2*(1-t))/L$d[1]
 
-# XXX this is stupid, find a better way ('l' or LaTeX '\ell' in the paper):
   v = L$v[P,1]
-  ell = max(vapply(1:length(v), function(i) {x=v[-(1:i)];sum(x-x[1] <= limit)}, 1))
+# linear time longest run search (A. Poliakov):
+  lower = 1
+  ell = 1
+  for(upper in 2:length(v))
+  {
+    if(v[upper] - v[lower] <= limit)
+    {
+      ell = max(ell, upper - lower + 1)
+    } else
+    {
+      while(lower < upper && v[upper] - v[lower] > limit) lower = lower + 1
+    }
+  }
+
 
 # This is the big union in step 4 of algorithm 2.1, combined with step 6 to
 # convert back to original indices, and step 7 to evaluate the candiadtes.
