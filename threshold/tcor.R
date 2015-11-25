@@ -35,7 +35,6 @@ tcor = function(A, t=0.99, p=5, cores=detectCores(), ...)
   t1 = (proc.time() - t0)[[3]]
   P  = order(L$v[, 1])  # order the entries of v1 (the permutation in the paper)
   limit = sqrt(2 * (1 - t)) / L$d[1]
-
   v = L$v[P,1]
 # linear time longest run search (A. Poliakov):
   lower = 1
