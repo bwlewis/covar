@@ -125,8 +125,7 @@ decomposition (SVD) to find all pairs of close vectors with respect to a
 distance metric (instead of correlation).  Our method finds all of the most
 highly-correlated vector pairs with respect to a given threshold by pruning
 along an intuitive path of decreasing variance defined by the data and computed
-by the SVD.
-
+by a truncated SVD.
 
 Consider a real-valued data matrix $A$ consisting of $m$ observations of $n$
 column vectors.  Denote the columns of $A$ as $a_j\in\mathcal{R}^m$ for
@@ -376,8 +375,8 @@ correlation threshold--the pruning does not produce false negatives.
 The algorithm typically prunes the vast majority of pairs of vectors below the
 correlation threshold with truncated singular value decompositions of only
 relatively low rank $p$.  The choice of $p$ represents a balance between work in
-computing a truncated SVD and work required by the $\ell$ matrix vector
-products of order $n\times p$ in step 4.
+computing a truncated SVD plus work required by step 4 and filtering the
+thresholded values in step 7.
 
 
 

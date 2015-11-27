@@ -2,10 +2,10 @@
 source("tcor.R")
 
 library(biclust)  # for the EisenYeast and BicatYeast data
-#data(BicatYeast)  # in gene by sample orientation (a tiny example for testing)
-#A = t(BicatYeast) # to correlate genes to genes
-data(EisenYeast)  # slightly larger example
-A = t(EisenYeast) # to correlate genes to genes
+data(BicatYeast)  # in gene by sample orientation (a tiny example for testing)
+A = t(BicatYeast) # to correlate genes to genes
+#data(EisenYeast)  # slightly larger example
+#A = t(EisenYeast) # to correlate genes to genes
 
 t = 0.95
 

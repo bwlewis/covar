@@ -25,8 +25,9 @@ require(doParallel)
 #'     the correlation threshold identified by the algorithm.
 #'   \item \code{total_time} Total run time.
 #' }
-tcor = function(A, t=0.99, p=5, cores=detectCores(), ...)
+tcor = function(A, t=0.99, p=10, cores=detectCores(), ...)
 {
+  if(ncol(A) < p) p = max(1, floor(ncol(A) / 2 - 1))
   t0 = proc.time()
   mu = colMeans(A)
   s  = sqrt(apply(A, 2, crossprod) - nrow(A) * mu ^ 2) # col norms of centered matrix
