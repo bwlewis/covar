@@ -109,11 +109,11 @@ image processing applications\cite{timeseries, svd-similarity}.
 The number of correlation coefficients grows quadratically with the number of
 vectors. Simply computing all pairs of correlation coefficients and then
 filtering out coefficients below a given threshold may not be computationally
-feasable for high-dimensional data in modern genomics and other applications.
+feasible for high-dimensional data in modern genomics and other applications.
 Considerable attention has been devoted to \emph{pruning
 methods} that cheaply prune away all but the most highly-correlated pairs of
 vectors.  For example the TAPER and related algorithms of Xiong et al. develop
-pruning rules based on the frequency of mutually co-ocurring observations (rows)
+pruning rules based on the frequency of mutually co-occurring observations (rows)
 among vector pairs; see \cite{prune1, prune2} and the references therein.
 Related methods approximate a set containing the most highly-correlated
 pairs using hashing algorithms\cite{prune3}. A number of other methods arrive
@@ -430,15 +430,18 @@ plus the flops required by IRLBA and the post-processing step 7 (also $O(np)$).
 
 \section{Numerical experiments}\label{examples}
 
-We evaluted the algorithm using three publically-available gene expression
-datasets.  The tests were performed on a desktop PC with a single AMD A10-7850K
-3.7$\,$GHz Athlon quad-core CPU and 16$\,$GB 1333$\,$MHz unbuffered RAM running
-the Ubuntu 12.04.5 GNU/Linux OS. Tests were performed with 64-bit R version
-3.1.2 using double-precision arithmetic and the OpenBLAS library version
-0.1alpha2.2-3 (based on Goto's BLAS version 1.13) with {\tt
-OMP\_NUM\_THREADS=4}.  All examples use the reference R implementation
-function, {\tt tcor()}, which can be installed for the R language from the
-development GitHub repository using the {\tt devtools} package with:
+We evaluated the algorithm using three public gene expression and methylation
+datasets.  Most tests were performed on a desktop PC with a single AMD
+A10-7850K 3.7$\,$GHz Athlon quad-core CPU and 16$\,$GB 1333$\,$MHz unbuffered
+RAM running the Ubuntu 12.04.5 GNU/Linux OS. Tests were performed with 64-bit R
+version 3.1.2 using double-precision arithmetic and the OpenBLAS library
+version 0.1alpha2.2-3 (based on Goto's BLAS version 1.13) with {\tt
+OMP\_NUM\_THREADS=4}. The last experiment includes a test run on a Linux
+cluster as described in the text.
+
+All examples use the reference R implementation, {\tt tcor()}, which can be
+installed for the R language from the development GitHub repository using the
+{\tt devtools} package with:
 
 <<eval=FALSE,echo=TRUE>>=
 devtools::install_github("bwlewis/tcor")
@@ -468,10 +471,10 @@ The first example is a tiny proof of concept that provides the data for Figure
 Wall-clock times are reported in seconds and peak memory use in excess of
 memory required to store the input data matrix is reported in megabytes.
 
-Anyone can quickly run the expample to experiment with the algorithm and
+Anyone can quickly run the example to experiment with the algorithm and
 compare its output with brute force results. The example uses the {\tt
 BicatYeast} data from the {\tt biclust} R package and related {\tt BicAT}
-software\cite{biclust, bicat}. The data consist of 70 experiments invovling the
+software\cite{biclust, bicat}. The data consist of 70 experiments involving the
 Saccharomyces Cerevisiae yeast measuring gene expression data across 419
 Affymetrix probes, represented as a $70\times 419$ real-valued matrix.  The
 example finds all pairs of columns (Affymetrix probes) that meet or exceed a
@@ -561,7 +564,7 @@ comparison, R's {\tt cor()} function took about 372 seconds and about
 #f = "BRCA.rnaseq__illuminahiseq_rnaseq__unc_edu__Level_3__gene_expression__data.data.txt"
 #N = 20534  # total number of lines
 #h = 2      # header lines
-# Read the first header line with sampe IDs:
+# Read the first header line with sample IDs:
 #id = as.vector(read.table(f, sep="\t", stringsAsFactors=FALSE, header=FALSE, nrows=1))
 # Read the 2nd header line with sample type (raw, RPKM, etc.)
 #header = as.vector(read.table(f, sep="\t", stringsAsFactors=FALSE, skip=1, header=FALSE, nrows=1))
@@ -695,25 +698,44 @@ algorithm would need to evaluate over 155 billion vector pairs; the projection
 of Algorithm \ref{prune} limited the search space to only about 4 million
 candidate pairs, from which the 913,601 correlated pairs were found.
 
+We illustrate that step 4 of Algorithm \ref{prune} can be computed in parallel
+by comparing the above results run on our reference test PC with results run on
+a modest GNU/Linux cluster at Paradigm4, Inc. The cluster consisted of four
+computers connected by 10 gigabit ethernet. Each computer contained two Intel
+Xeon E5-2650 2$\,$GHz CPUs (16 physical CPU cores per computer) and 64$\,$GB
+ECC registered RAM running at 1,600$\,$MHz running CentOS 6.6 and 64-bit R
+version 3.2.2 with the reference R BLAS library.
+
+No code change was required to run in parallel on the cluster. The reference R
+{\tt tcor()} implementation uses R's {\tt foreach}\cite{foreach} framework to
+run on arbitrary parallel configurations (``back ends''). We simply registered
+a {\tt doRedis}\cite{doredis} parallel back end with 16 R workers per computer
+prior to invoking {\tt tcor()}.
+
+The results computed on the Linux cluster are marked ``tcor (64 core cluster)''
+below.
+
+
 <<echo=FALSE, results=tex>>=
 # Default values:
 t1=10449.670
 t2=NA
+t3=NA
 m1=1261.6
 m2=NA
+m3=NA
 
 if(Sys.getenv("RUN_EXAMPLES")=="TRUE")
 {
   # simulated data, replicate rows 27x
 }
 require(xtable)
-ans = data.frame(Method=c("tcor","brute force"), `Wall-clock time (s)`=c(t1, t2), `Peak excess memory use (MB)`=c(m1, m2), check.names=FALSE)
+ans = data.frame(Method=c("tcor (4 core PC)","brute force","tcor (64 core cluster)"), `Wall-clock time (s)`=c(t1, t2, t3), `Peak excess memory use (MB)`=c(m1, m2, m3), check.names=FALSE)
 print(
     xtable(ans,
         caption = "TCGA ACC Methylation450 (80 rows x 394,014 columns, threshold=0.99)", label = "TCGA3", caption.placement = "top")
-  ,size="small", table.placement="ht", include.rownames=FALSE)
+  ,size="small", table.placement="ht", include.rownames=FALSE, NA.string="NA")
 @
-
 
 
 %%<<eval=TRUE,echo=FALSE>>=
