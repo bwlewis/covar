@@ -286,7 +286,7 @@ adjacent pairs of vectors with respect to the ordering $P$ occurs.
 Including more terms from Equation \ref{vdist} increases our ability to prune
 adjacent pairs of vectors below the correlation threshold with respect to the
 ordering defined by $P$.  Including only one more term finds that 49\% of
-adjacent vectors fall below the a correlation threshold of $0.95$ in the
+adjacent vectors fall below the correlation threshold of $0.95$ in the
 example shown in Figure \ref{fig1} and are pruned by identifying indices such
 that
 \[
@@ -433,18 +433,36 @@ the Ubuntu 12.04.5 GNU/Linux OS. Tests were performed with 64-bit R version
 0.1alpha2.2-3 (based on Goto's BLAS version 1.13) with {\tt
 OMP\_NUM\_THREADS=4}.  All examples use the reference R implementation
 function, {\tt tcor()}, which can be installed for the R language from the
-development version of IRLBA GitHub repository using the {\tt devtools} package
-with:
+development GitHub repository using the {\tt devtools} package with:
 
 <<eval=FALSE,echo=TRUE>>=
-devtools::install_github("bwlewis/irlba")
+devtools::install_github("bwlewis/tcor")
 @
 
+The native R {\tt cor()} function is a general function that can compute
+several different types of correlation matrices including Pearson, Spearman,
+and Kendall and includes a number of options for dealing with missing values.
+Because of its flexibility, the native {\tt cor()} function does not always
+compute Pearson correlation matrices in the most computationally-efficient way.
 
-\subsection{BicatYeast small example}
+Correlation matrix computation can benefit substantially from use of optimized
+BLAS Level 3 operations (matrix multiplication), achieving high utilization of
+available CPU floating point capacity. The {\tt tcor()} function also benefits
+from optimized BLAS routines, but not as much as it mostly makes use of Level 2
+operations and Level 3 operations on sequences of smaller problems.
+
+We compare the {\tt tcor()} function with brute-force Pearson correlation
+matrix computation computed in the fastest way we can, directly using matrix
+multiplication instead of using the slower {\tt cor()} function.
+
+
+\subsection{Small BicatYeast example}
 
 The first example is a tiny proof of concept that provides the data for Figure
-\ref{fig1} and illustrates our timing and memory-use measurement methodology.
+\ref{fig1} and establishes our timing and memory use measurement methodology.
+Wall-clock times are reported in seconds and peak memory use in excess of
+memory required to store the input data matrix is reported in megabytes.
+
 Anyone can quickly run the expample to experiment with the algorithm and
 compare its output with brute force results. The example uses the {\tt
 BicatYeast} data from the {\tt biclust} R package and related {\tt BicAT}
@@ -454,8 +472,9 @@ Affymetrix probes, represented as a $70\times 419$ real-valued matrix.  The
 example finds all pairs of columns (Affymetrix probes) that meet or exceed a
 Pearson correlation value of 0.95.  We use a projected dimension $p=10$ in {\tt tcor()}.
 \begin{small}
-<<eval=FALSE,echo=TRUE>>=
+<<eval=TRUE,echo=TRUE>>=
 library(irlba)
+source("tcor.R")  # XXX Replace later with tcor pacakge
 library(biclust)  # for the BicatYeast data
 data(BicatYeast)  # in gene by sample orientation
 A = t(BicatYeast) # to correlate genes to genes
@@ -468,38 +487,189 @@ tx  = tcor(A, t=threshold, p=10)
 t1  = (proc.time() - t1)[3] # Time in seconds
 m1  = sum(gc()[,6]) - m1    # Peak excess memory use during the test
 
-cat("tcor time (s)                      ", t1, "\n")
-cat("tcor peak excess memory (MB)       ", m1, "\n")
-
-# Compute using R's native cor() function:
+# Fast brute force full correlation:
 m2  = sum(gc()[,2])
 t2  = proc.time()
-cx  = cor(A)                # full correlation matrix
-diag(cx) = -Inf             # ignore diagonal
+mu = colMeans(A)
+s  = sqrt(apply(A, 2, crossprod) - nrow(A) * mu ^ 2)
+cs = scale(A, center=mu, scale=s)  # scale and center the data
+cx = crossprod(cs)                 # full correlation matrix
+cx  = cx * upper.tri(cx)    # ignore symmetry and diagonal
 pairs = which(cx >= threshold, arr.ind=TRUE)
 t2  = (proc.time() - t2)[3]
 m2  = sum(gc()[,6]) - m2
-
-cat("brute force time (s)               ", t2, "\n")
-cat("brute force peak excess memory (MB)", m2, "\n")
-
-# Compare results!
-cat("brute force vector pairs found", nrow(pairs)/2, "\n")
-cat("tcor vector pairs found       ", nrow(tx[[1]]), "\n")
 @
 \end{small}
 Brute-force computation outperforms {\tt tcor()} in this tiny first example,
 both in speed and slightly in memory use.  Each algorithm identifies the same
-115 vector pairs that exceed the specified correlation threshold of 0.95, with
-comparative timing and memory use shown in the following table.
+115 unique vector pairs that exceed the specified correlation threshold of
+0.95, with comparative timing and memory use shown in the following table.
 
-\begin{center}
-\begin{tabular}{l|rr}
- & {\tt tcor()} & native {\tt cor()} \\
-Wall-clock time (s) & 0.26 & 0.02 \\
-Excess peak memory use (MB) & 29.2 & 26.2 \\
-\end{tabular}
-\end{center}
+<<echo=FALSE, results=tex>>=
+require(xtable)
+ans = data.frame(Method=c("tcor","cor"), `Wall-clock time (s)`=c(t1, t2), `Peak excess memory use (MB)`=c(m1, m2), check.names=FALSE)
+print(
+    xtable(ans,
+        caption = "BicatYeast results, threshold=0.95", label = "BicatYeast", caption.placement = "top")
+  ,size="small", table.placement="ht", include.rownames=FALSE)
+@
+
+
+\subsection{TCGA Gene Expression Examples}
+
+Performance benefits from the {\tt tcor()} function become apparent whith large
+data.  The next example uses RPKM-normalized gene expression data measured
+across 20,532 genes from 878 breast cancer tumor samples obtained from the
+Broad GDAC dashboard\cite{gdac} of the Cancer Genome Atlas data. See the
+supplemental code at XXX  (also embedded in this Sweave document) for examples
+of efficiently converting the downloaded sample expression data into an R
+matrix.
+
+Eight columns with constant zero values were removed from the data in a
+pre-processing step, leaving an $878\times 20524$ matrix. The example computes
+pairs of gene expression column vectors with correlation values of 0.99
+or more. We use the same {\tt tcor} projection dimension of 10 and performance
+measurement methodology as used in the first example.
+
+Both methods find the same 3,572 pairs of vectors. The fast brute-force
+computation is slightly faster than the {\tt tcor()} function largely due to
+the still relatively small input matrix and better utilization of optimized
+BLAS routines. But the {\tt tcor()} function uses far less memory.  (For
+comparison, R's {\tt cor()} function took about 372 seconds and about
+3200$\,$MB RAM on the same problem on the same test system.)
+
+<<echo=FALSE, results=tex>>=
+# --------------------------------------------------------------------------------------------------
+# The first time you run this, you need to download the data as outlined in the
+# following commented-out section. This code creates a file named
+# 'rpkm.RData' used subsequently.
+#
+# To run any of the remaining (large) examples, first set the system environment
+# variable RUN_EXAMPLES=TRUE (otherwise they won't run and representative results
+# from Bryan's test machine will be printed).
+#
+#library(doMC)
+# Download and extract this file with, for example:
+# wget  http://gdac.broadinstitute.org/runs/stddata__2015_08_21/data/BRCA/20150821/gdac.broadinstitute.org_BRCA.Merge_rnaseq__illuminahiseq_rnaseq__unc_edu__Level_3__gene_expression__data.Level_3.2015082100.0.0.tar.gz
+# tar zxf gdac.broadinstitute.org_BRCA.Merge_rnaseq__illuminahiseq_rnaseq__unc_edu__Level_3__gene_expression__data.Level_3.2015082100.0.0.tar.gz
+# cd gdac.broadinstitute.org_BRCA.Merge_rnaseq__illuminahiseq_rnaseq__unc_edu__Level_3__gene_expression__data.Level_3.2015082100.0.0
+# R --slave < read.R   # (run this file)
+#f = "BRCA.rnaseq__illuminahiseq_rnaseq__unc_edu__Level_3__gene_expression__data.data.txt"
+#N = 20534  # total number of lines
+#h = 2      # header lines
+# Read the first header line with sampe IDs:
+#id = as.vector(read.table(f, sep="\t", stringsAsFactors=FALSE, header=FALSE, nrows=1))
+# Read the 2nd header line with sample type (raw, RPKM, etc.)
+#header = as.vector(read.table(f, sep="\t", stringsAsFactors=FALSE, skip=1, header=FALSE, nrows=1))
+# Read the rest of the file in parallel. I prefer doMC/foreach over mclapply
+# for this because foreach can combine results incrementally.
+#cores = 4
+#registerDoMC(cores)
+#block = floor((N - h)/cores)
+#t1 = proc.time()
+#ans = foreach(j=1:cores, .combine=rbind) %dopar%
+#{
+#    skip = block * (j - 1) + h
+#    nrows = ifelse(j == cores, -1, block)
+#    read.table(f, sep="\t", stringsAsFactors=FALSE, skip=skip, header=FALSE, nrows=nrows)
+#}
+#names(ans) = header
+#print(proc.time() - t1)
+# (All timings shown for a quad-core Athlon home PC reading from an older
+# OCZ REVODRIVE3 X2 SSD drive (ca 2014).)
+#   user  system elapsed
+#494.549   4.134 131.232
+# Compare with sequential approach:
+#t1 = proc.time()
+#x = read.table(f, sep="\t", stringsAsFactors=FALSE, skip=1, header=TRUE)
+#print(proc.time() - t1)
+#   user  system elapsed
+#517.430   1.318 519.553
+# Create a samples x gene matrix of RPKM values
+#genes = ans[, 1] # gene labels
+#idx   = grep("RPKM", names(ans))    # Select columns with RPKM values
+#rpkm     = t(as.matrix(ans[, idx]))
+# Label the coordinates by sample ID and gene:
+#rownames(rpkm) = id[idx]
+#colnames(rpkm) = genes
+#save(rpkm, file="rpkm.RData")
+# --------------------------------------------------------------------------------------------------
+# Default values:
+t1=40.34
+t2=35.60
+m1=39.10
+m2=9595.10
+
+if(Sys.getenv("RUN_EXAMPLES")=="TRUE")
+{
+load("rpkm.RData")  # rpkm expression matrix
+
+# The data have a few columns of all zeros that need to be removed
+n = ncol(rpkm)
+rpkm = rpkm[, colMeans(rpkm) > 0]
+
+threshold = 0.99     # correlation threshold
+xx  = gc()           # clear
+m1  = sum(gc()[,2])  # Memory in megabytes currently in use
+t1  = proc.time()
+tx  = tcor(rpkm, threshold, 11)
+t1  = (proc.time() - t1)[3] # Time in seconds
+m1  = sum(gc()[,6] - m1)    # Peak excess memory use during the test
+
+# Compare with the fastest way we know of to compute a thresholded correlation
+# matrix by brute force. This approach makes heavy use of fast multi-threaded
+# BLAS routines. This approach is much faster than R's default `cor` function.
+xx  = gc()
+m2  = sum(gc()[,2])  # Memory in megabytes currently in use
+t2 = proc.time()
+mu = colMeans(rpkm)
+s  = sqrt(apply(rpkm, 2, crossprod) - nrow(rpkm) * mu ^ 2) # col norms of centered matrix
+cs = scale(rpkm, center=mu, scale=s)  # scale and center the data
+bx = crossprod(cs)                    # full correlation matrix
+diag(bx) = 0                          # ignore diagonal (all ones)
+pairs = which(bx >= threshold, arr.ind=TRUE)
+t2  = (proc.time() - t2)[3] # Time in seconds
+m2  = sum(gc()[,6] - m2)    # Peak excess memory use during the test
+} # RUN_EXAMPLES=TRUE
+
+require(xtable)
+ans = data.frame(Method=c("tcor","cor"), `Wall-clock time (s)`=c(t1, t2), `Peak excess memory use (MB)`=c(m1, m2), check.names=FALSE)
+print(
+    xtable(ans,
+        caption = "TCGA BRCA gene expression results (878 samples x 20,542 genes, threshold=0.99)", label = "TCGA1", caption.placement = "top")
+  ,size="small", table.placement="ht", include.rownames=FALSE)
+@
+
+
+We simulated a data set with a larger number of samples by simply replicating
+the rows of the gene expression matrix 27 times to obtain a matrix with 23,706
+rows and 20,524 columns, noting that the simulated data have the same rank (of
+at most 878) and the same expected number of vector pairs meeting the
+correlation threshold as the original data. Each method again computed the same
+set of  3,572 pairs of vectors metting the correlation threshold of 0.99, but
+the {\tt tcor()} function outperforms the brute force method in both compute
+time and memory consumption.
+
+
+<<echo=FALSE, results=tex>>=
+# Default values:
+t1=372.69
+t2=546.06
+m1=768.3
+m2=9600.2
+
+if(Sys.getenv("RUN_EXAMPLES")=="TRUE")
+{
+  # simulated data, replicate rows 27x
+}
+require(xtable)
+ans = data.frame(Method=c("tcor","cor"), `Wall-clock time (s)`=c(t1, t2), `Peak excess memory use (MB)`=c(m1, m2), check.names=FALSE)
+print(
+    xtable(ans,
+        caption = "TCGA simulated gene expression results (23,706 rows x 20,542 columns, threshold=0.99)", label = "TCGA2", caption.placement = "top")
+  ,size="small", table.placement="ht", include.rownames=FALSE)
+@
+
 
 
 
@@ -510,25 +680,19 @@ Excess peak memory use (MB) & 29.2 & 26.2 \\
 %%@
 
 
-Brute-force computation benefits substantially from sustained use of BLAS Level
-3 operations (matrix multiplication), achieving high utilization of available
-CPU floating point capacity. The tcor method also benefits from optimized BLAS
-routines, but not as much as it mostly makes use of Level 2 operations and
-Level 3 operations on sequences of smaller problems.
-
-
-
-%<<echo=FALSE, results=tex>>=
-%require(xtable)
-%print(
-%    xtable(head(iris),
-%        caption = "blah", label = "tab:five", table.placement = "!h", caption.placement = "top")
-%  , size = "small", table.placement="ht")
-%@
-
 
 
 \section{Extensions}\label{extensions}
+
+XXX Two basic extensions, include functions/options for this in the package.
+
+The main ideas in Algorithm \ref{prune}, although applied to correlation,
+easily extend to any distance metric.
+
+
+Algorithm \ref{prune} can be adapted to find pairs of highly anti-correlated
+vectors by changing the distance metric...XXX
+
 \section{Conclusion}\label{conclusion}
 
 
@@ -547,11 +711,15 @@ Level 3 operations on sequences of smaller problems.
 %% irlba
 \bibitem{irlba}
 Baglama, James, and Lothar Reichel. Augmented implicitly restarted Lanczos bidiagonalization methods. SIAM Journal on Scientific Computing 27.1 (2005): 19-42.
+
 \bibitem{irlbam}
 Baglama, James,  {\url{http://www.math.uri.edu/~jbaglama/software/irlba.m}}.
 
 %% BicatYeast data
 \bibitem{bicat} Barkow, S., Bleuler, S., Prelic, A., Zimmermann, P., and E. Zitzler. BicAT: a biclustering analysis toolbox, Bioinformatics, 2006 22(10):1282-1283.
+
+%% BROAD GDAC dashboard
+\bibitem{gdac}{\url{http://gdac.broadinstitute.org/runs/stddata__2015_08_21/data/BRCA/20150821/gdac.broadinstitute.org_BRCA.Merge_rnaseq__illuminahiseq_rnaseq__unc_edu__Level_3__gene_expression__data.Level_3.2015082100.0.0.tar.gz}}
 
 %% Applications in machine learning
 \bibitem{ml1}
