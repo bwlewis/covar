@@ -377,6 +377,11 @@ in computing a truncated SVD and evaluating $\ell$ rank $p$ matrix products in
 Step 4 (each increasing in work as $p$ increases), and the work required to
 filter the thresholded values in step 7 (decreasing work as $p$ increases).
 
+Most of the floating point operations occur in step 4 of Algorithm \ref{prune}.
+Fortunately the $\ell$ evaluations in step 4 are independent of each other and
+can easily be computed in parallel. See the reference R
+implementation\cite{sup} for an example.
+
 
 \section{General matrices and fast truncated SVD}\label{irlba}
 
@@ -448,8 +453,8 @@ compute Pearson correlation matrices in the most computationally-efficient way.
 Correlation matrix computation can benefit substantially from use of optimized
 BLAS Level 3 operations (matrix multiplication), achieving high utilization of
 available CPU floating point capacity. The {\tt tcor()} function also benefits
-from optimized BLAS routines, but not as much as it mostly makes use of Level 2
-operations and Level 3 operations on sequences of smaller problems.
+from optimized BLAS routines, but not as much, as it mostly makes use of Level
+2 operations and Level 3 operations on sequences of smaller problems.
 
 We compare the {\tt tcor()} function with brute-force Pearson correlation
 matrix computation computed in the fastest way we can, directly using matrix
@@ -507,7 +512,7 @@ both in speed and slightly in memory use.  Each algorithm identifies the same
 
 <<echo=FALSE, results=tex>>=
 require(xtable)
-ans = data.frame(Method=c("tcor","cor"), `Wall-clock time (s)`=c(t1, t2), `Peak excess memory use (MB)`=c(m1, m2), check.names=FALSE)
+ans = data.frame(Method=c("tcor","brute force"), `Wall-clock time (s)`=c(t1, t2), `Peak excess memory use (MB)`=c(m1, m2), check.names=FALSE)
 print(
     xtable(ans,
         caption = "BicatYeast results, threshold=0.95", label = "BicatYeast", caption.placement = "top")
@@ -517,16 +522,15 @@ print(
 
 \subsection{TCGA Gene Expression Examples}
 
-Performance benefits from the {\tt tcor()} function become apparent whith large
+Performance benefits from the {\tt tcor()} function become apparent with more
 data.  The next example uses RPKM-normalized gene expression data measured
 across 20,532 genes from 878 breast cancer tumor samples obtained from the
-Broad GDAC dashboard\cite{gdac} of the Cancer Genome Atlas data. See the
-supplemental code at XXX  (also embedded in this Sweave document) for examples
-of efficiently converting the downloaded sample expression data into an R
-matrix.
+Broad GDAC Cancer Genome Atlas dashboard\cite{gdac}. See the supplemental
+code\cite{sup} (also embedded in this Sweave document) for examples of
+efficiently converting the downloaded sample expression data into an R matrix.
 
-Eight columns with constant zero values were removed from the data in a
-pre-processing step, leaving an $878\times 20524$ matrix. The example computes
+Eight columns with constant zero values were removed from the data,
+leaving an $878\times 20524$ matrix. The example computes
 pairs of gene expression column vectors with correlation values of 0.99
 or more. We use the same {\tt tcor} projection dimension of 10 and performance
 measurement methodology as used in the first example.
@@ -633,7 +637,7 @@ m2  = sum(gc()[,6] - m2)    # Peak excess memory use during the test
 } # RUN_EXAMPLES=TRUE
 
 require(xtable)
-ans = data.frame(Method=c("tcor","cor"), `Wall-clock time (s)`=c(t1, t2), `Peak excess memory use (MB)`=c(m1, m2), check.names=FALSE)
+ans = data.frame(Method=c("tcor","brute force"), `Wall-clock time (s)`=c(t1, t2), `Peak excess memory use (MB)`=c(m1, m2), check.names=FALSE)
 print(
     xtable(ans,
         caption = "TCGA BRCA gene expression results (878 samples x 20,542 genes, threshold=0.99)", label = "TCGA1", caption.placement = "top")
@@ -646,7 +650,7 @@ the rows of the gene expression matrix 27 times to obtain a matrix with 23,706
 rows and 20,524 columns, noting that the simulated data have the same rank (of
 at most 878) and the same expected number of vector pairs meeting the
 correlation threshold as the original data. Each method again computed the same
-set of  3,572 pairs of vectors metting the correlation threshold of 0.99, but
+set of  3,572 pairs of vectors meeting the correlation threshold of 0.99, but
 the {\tt tcor()} function outperforms the brute force method in both compute
 time and memory consumption.
 
@@ -663,13 +667,52 @@ if(Sys.getenv("RUN_EXAMPLES")=="TRUE")
   # simulated data, replicate rows 27x
 }
 require(xtable)
-ans = data.frame(Method=c("tcor","cor"), `Wall-clock time (s)`=c(t1, t2), `Peak excess memory use (MB)`=c(m1, m2), check.names=FALSE)
+ans = data.frame(Method=c("tcor","brute force"), `Wall-clock time (s)`=c(t1, t2), `Peak excess memory use (MB)`=c(m1, m2), check.names=FALSE)
 print(
     xtable(ans,
         caption = "TCGA simulated gene expression results (23,706 rows x 20,542 columns, threshold=0.99)", label = "TCGA2", caption.placement = "top")
   ,size="small", table.placement="ht", include.rownames=FALSE)
 @
 
+
+\subsection{TCGA DNA methylation example}
+
+The following example uses calculated beta values from the Illumina Human
+Methylation450 BeadChip of 80 Adenoid Cystic Carcinoma (ACC) tumor samples
+obtained from the Broad GDAC Cancer Genome Atlas dashboard\cite{gdac}. See the
+supplemental code\cite{sup} for examples of efficiently converting the
+downloaded sample methylation data into an R matrix.
+
+We removed 91,563 columns with all constant or missing values from the data,
+leaving an $80\times 394014$ matrix. The example computes
+pairs of methylation beta value column vectors with correlation values of 0.99
+or more. We use the same {\tt tcor} projection dimension of 10 and performance
+measurement methodology as used in the first example.
+
+Algorithm \ref{prune} identified 913,601 pairs of vectors with correlation
+values of 0.99 or more in about three hours on our test PC. A brute force
+algorithm would need to evaluate over 155 billion vector pairs; the projection
+of Algorithm \ref{prune} limited the search space to only about 4 million
+candidate pairs, from which the 913,601 correlated pairs were found.
+
+<<echo=FALSE, results=tex>>=
+# Default values:
+t1=10449.670
+t2=NA
+m1=1261.6
+m2=NA
+
+if(Sys.getenv("RUN_EXAMPLES")=="TRUE")
+{
+  # simulated data, replicate rows 27x
+}
+require(xtable)
+ans = data.frame(Method=c("tcor","brute force"), `Wall-clock time (s)`=c(t1, t2), `Peak excess memory use (MB)`=c(m1, m2), check.names=FALSE)
+print(
+    xtable(ans,
+        caption = "TCGA ACC Methylation450 (80 rows x 394,014 columns, threshold=0.99)", label = "TCGA3", caption.placement = "top")
+  ,size="small", table.placement="ht", include.rownames=FALSE)
+@
 
 
 
@@ -684,14 +727,15 @@ print(
 
 \section{Extensions}\label{extensions}
 
-XXX Two basic extensions, include functions/options for this in the package.
+XXX
 
-The main ideas in Algorithm \ref{prune}, although applied to correlation,
+1. The main ideas in Algorithm \ref{prune}, although applied to correlation,
 easily extend to any distance metric.
 
 
-Algorithm \ref{prune} can be adapted to find pairs of highly anti-correlated
-vectors by changing the distance metric...XXX
+2. Anti-correlated pairs? Anyone?
+
+
 
 \section{Conclusion}\label{conclusion}
 
@@ -719,7 +763,7 @@ Baglama, James,  {\url{http://www.math.uri.edu/~jbaglama/software/irlba.m}}.
 \bibitem{bicat} Barkow, S., Bleuler, S., Prelic, A., Zimmermann, P., and E. Zitzler. BicAT: a biclustering analysis toolbox, Bioinformatics, 2006 22(10):1282-1283.
 
 %% BROAD GDAC dashboard
-\bibitem{gdac}{\url{http://gdac.broadinstitute.org/runs/stddata__2015_08_21/data/BRCA/20150821/gdac.broadinstitute.org_BRCA.Merge_rnaseq__illuminahiseq_rnaseq__unc_edu__Level_3__gene_expression__data.Level_3.2015082100.0.0.tar.gz}}
+\bibitem{gdac}{Broad Institute TCGA Genome Data Analysis Center (2015): Analysis-ready standardized TCGA data from Broad GDAC Firehose stddata\_\_2015\_06\_01 run. Broad Institute of MIT and Harvard. Dataset. \url{http://dx.doi.org/10.7908/C1251HBG}}
 
 %% Applications in machine learning
 \bibitem{ml1}
@@ -735,12 +779,12 @@ Theron, Roberto, Quintales, Luis, Leisch, Friederich, and De Troyer, Ewoud,
 \bibitem{irlbap}
 Kane, Michael and Lewis, Bryan,  \url{https://github.com/bwlewis/irlbpy}.
 
-%% IRLBA implementations
+%% IRLBA implementations and supplemental code
 \bibitem{irlbar}
 Lewis, Bryan,  \url{https://cran.r-project.org/web/packages/irlba}.
 
-\bibitem{tcor}
-Lewis, Bryan,  \url{https://github.com/bwlewis/covar/blob/master/threshold/tcor.R}.
+\bibitem{sup}
+Lewis, Bryan,  \url{https://github.com/bwlewis/tcor}.
 
 %% Approximate correlation
 \bibitem{timeseries}
