@@ -1,5 +1,5 @@
 require(irlba)
-require(doMC)
+require(foreach)
 
 #' linear time longest run search (A. Poliakov), find the longest
 #' run of values in the vector within the specified distance
@@ -31,8 +31,6 @@ longrun = function(v, limit)
 #' @param A an m by n real-valued dense or sparse matrix
 #' @param t a threshold value for correlation
 #' @param p projected subspace dimension
-#' @param cores number of CPU cores to use in explicitly parallel code sections
-#'  (note that available BLAS libraries may implicitly use multiple threads)
 #' @param additional arguments passed to \code{\link{irlba}}
 #'
 #' @return A list with three elements:
@@ -47,7 +45,7 @@ longrun = function(v, limit)
 #'     the correlation threshold identified by the algorithm.
 #'   \item \code{total_time} Total run time.
 #' }
-tcor = function(A, t=0.99, p=10, cores=detectCores(), ...)
+tcor = function(A, t=0.99, p=10, ...)
 {
   if(ncol(A) < p) p = max(1, floor(ncol(A) / 2 - 1))
   t0 = proc.time()
@@ -74,13 +72,11 @@ tcor = function(A, t=0.99, p=10, cores=detectCores(), ...)
 # The big union in step 4 of algorithm 2.1 follows, combined with step 6 to
 # convert back to original indices, and step 7 to evaluate the candiadtes.
 # Each step from 1 to ell is independent of the others; the steps can run
-# in parallel. Warning, use a fork-safe BLAS library with the doMC package.
-# Alternatively use the doParallel pacakge with a socket-based cluster.
+# in parallel.
   combine = function(x, y)
   {
     list(idx=rbind(x$idx, y$idx), n=x$n + y$n)
   }
-  registerDoMC(cores)
 
   indices = foreach(i=1:ell, .combine=combine, .inorder=FALSE) %dopar%
   {
