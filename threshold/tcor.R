@@ -31,7 +31,10 @@ longrun = function(v, limit)
 #' @param A an m by n real-valued dense or sparse matrix
 #' @param t a threshold value for correlation
 #' @param p projected subspace dimension
-#' @param additional arguments passed to \code{\link{irlba}}
+#' @param filter "local" filters candidate set sequentially,
+#'  "distributed" computes thresholded correlations in a parallel code section which can be
+#'  faster but requires that the data matrix is available (see notes).
+#' @param ... additional arguments passed to \code{\link{irlba}}
 #'
 #' @return A list with three elements:
 #' \enumerate{
@@ -45,8 +48,9 @@ longrun = function(v, limit)
 #'     the correlation threshold identified by the algorithm.
 #'   \item \code{total_time} Total run time.
 #' }
-tcor = function(A, t=0.99, p=10, ...)
+tcor = function(A, t=0.99, p=10, filter=c("distributed", "local"), ...)
 {
+  filter = match.arg(filter)
   if(ncol(A) < p) p = max(1, floor(ncol(A) / 2 - 1))
   t0 = proc.time()
   mu = colMeans(A)
@@ -78,7 +82,34 @@ tcor = function(A, t=0.99, p=10, ...)
     list(idx=rbind(x$idx, y$idx), n=x$n + y$n)
   }
 
-  indices = foreach(i=1:ell, .combine=combine, .inorder=FALSE) %dopar%
+  if(filter == "distributed")
+  {
+    indices = foreach(i=1:ell, .combine=combine, .inorder=FALSE) %dopar%
+    {
+      d = diff(L$v[P, 1:p, drop=FALSE], lag=i) ^ 2 %*% L$d[1:p] ^ 2
+      # These ordered indices meet the projected threshold:
+      j = which(d <= 2 * (1 - t))
+      n = length(j)
+      # return original un-permuted column indices that meet true threshold
+      # (step 7), including the number of possible candidates for info.:
+      if(n == 0)
+      {
+        ans = vector("list", 2)
+        names(ans) = c("idx", "n")
+        ans$n = n
+        return(ans)
+      }
+      v = vapply(j, function(k) cor(A[, P[k]], A[, P[k+i]]), 1)
+      h = v >= t
+      j = j[h]
+      v = v[h]
+      return(list(idx=cbind(i=P[j], j=P[j + i], cor=v), n=n))
+    }
+  }
+  return(c(indices, longest_run=ell, irlb_time=t1, total_time=(proc.time() - t0)[[3]]))
+
+# filter == "local" case
+  indices = foreach(i=1:ell, .combine=combine, .inorder=FALSE, .noexport="A") %dopar%
   {
     d = diff(L$v[P, 1:p, drop=FALSE], lag=i) ^ 2 %*% L$d[1:p] ^ 2
     # These ordered indices meet the projected threshold:
@@ -93,11 +124,10 @@ tcor = function(A, t=0.99, p=10, ...)
       ans$n = n
       return(ans)
     }
-    v = vapply(j, function(k) cor(A[, P[k]], A[, P[k+i]]), 1)
-    h = v >= t
-    j = j[h]
-    v = v[h]
-    return(list(idx=cbind(i=P[j], j=P[j + i], cor=v), n=n))
+    list(idx=cbind(i=P[j], j=P[j+i]), n=n)
   }
-  c(indices, longest_run=ell, irlb_time=t1, total_time=(proc.time() - t0)[[3]])
+  v = vapply(1:nrow(indices$idx), function(k) cor(A[, indices[k, 1]], A[, indices[k, 2]]), 1)
+  h = v >= t
+  indices = cbind(indices[h,], cor=v[h])
+  return(c(indices, longest_run=ell, irlb_time=t1, total_time=(proc.time() - t0)[[3]]))
 }

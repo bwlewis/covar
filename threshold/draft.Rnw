@@ -1,4 +1,4 @@
-%%
+%
 %% Instructions for processing this document into a PDF document
 %%
 %% FIRST NOTE, you need the 'biclust' package installed in R.
@@ -698,45 +698,52 @@ algorithm would need to evaluate over 155 billion vector pairs; the projection
 of Algorithm \ref{prune} limited the search space to only about 4 million
 candidate pairs, from which the 913,601 correlated pairs were found.
 
-We illustrate that step 4 of Algorithm \ref{prune} can be computed in parallel
-by comparing the above results run on our reference test PC with results run on
-a modest GNU/Linux cluster at Paradigm4, Inc. The cluster consisted of four
-computers connected by 10 gigabit ethernet. Each computer contained two Intel
-Xeon E5-2650 2$\,$GHz CPUs (16 physical CPU cores per computer) and 64$\,$GB
-ECC registered RAM running at 1,600$\,$MHz running CentOS 6.6 and 64-bit R
-version 3.2.2 with the reference R BLAS library.
+We illustrate that steps 4--7 of Algorithm \ref{prune} can be computed in
+parallel by comparing the above results run on our reference test PC with
+results run on a modest GNU/Linux cluster at Paradigm4, Inc. The cluster
+consisted of four computers connected by 10 gigabit ethernet. Each computer
+contained two Intel Xeon E5-2650 2$\,$GHz CPUs (16 physical CPU cores per
+computer) and 64$\,$GB ECC registered RAM running at 1,600$\,$MHz running
+CentOS 6.6 and 64-bit R version 3.2.2 with the reference R BLAS library.
 
 No code change was required to run in parallel on the cluster. The reference R
 {\tt tcor()} implementation uses R's {\tt foreach}\cite{foreach} framework to
 run on arbitrary parallel configurations (``back ends''). We simply registered
 a {\tt doRedis}\cite{doredis} parallel back end with 16 R workers per computer
-prior to invoking {\tt tcor()}.
+(64 total R worker processes) prior to invoking {\tt tcor()}.
 
 The results computed on the Linux cluster are marked ``tcor (64 core cluster)''
-below.
-
+below. The cluster example computed the filtering step 7 of Algorithm
+\ref{prune} in parallel across the 64 remote R processes. That approach incurs,
+in this example, an additional memory overhead of about 16$\,$GB because each
+remote R process requires access to a copy of the data matrix $A$. More thrifty
+adaptations of the algorithm are possible and could, for example, share the
+memory required by $A$ between worker R processes on each computer.
 
 <<echo=FALSE, results=tex>>=
 # Default values:
 t1=10449.670
-t2=NA
-t3=NA
+t3=482
+t4=NA
 m1=1261.6
-m2=NA
-m3=NA
+m3=994.3
+m4=42282.4
 
 if(Sys.getenv("RUN_EXAMPLES")=="TRUE")
 {
-  # simulated data, replicate rows 27x
+ # methylation data
 }
 require(xtable)
-ans = data.frame(Method=c("tcor (4 core PC)","brute force","tcor (64 core cluster)"), `Wall-clock time (s)`=c(t1, t2, t3), `Peak excess memory use (MB)`=c(m1, m2, m3), check.names=FALSE)
+ans = data.frame(Method=c("tcor (4 core PC)", "tcor (64 core cluster)", ""), `Wall-clock time (s)`=c(t1, t3, t4), `Memory use (MB)`=c(m1, m3, m4), " "=c("","(local)","(remote)"), check.names=FALSE)
 print(
     xtable(ans,
-        caption = "TCGA ACC Methylation450 (80 rows x 394,014 columns, threshold=0.99)", label = "TCGA3", caption.placement = "top")
-  ,size="small", table.placement="ht", include.rownames=FALSE, NA.string="NA")
+        caption = "TCGA ACC Methylation450 (80 rows x 394,014 columns, threshold=0.99). Linux cluster results include master R process memory use (local) plus total peak memory used by all 64 worker R processes (remote).", label = "TCGA3", caption.placement = "top")
+  ,size="small", table.placement="ht", include.rownames=FALSE, NA.string="")
 @
-
+From a set of almost 400 thousand vectors, Algorithm \ref{prune} finds 913,601
+pairs of vectors with correlation values of 0.99 or more on a modest Linux
+cluster in about 8 minutes. The same algorithm also runs well in constrained
+memory settings.
 
 %%<<eval=TRUE,echo=FALSE>>=
 %%library(irlba)
@@ -801,12 +808,16 @@ Theron, Roberto, Quintales, Luis, Leisch, Friederich, and De Troyer, Ewoud,
 \bibitem{irlbap}
 Kane, Michael and Lewis, Bryan,  \url{https://github.com/bwlewis/irlbpy}.
 
+%% doredis
+\bibitem{doredis}
+Lewis, Bryan. The doRedis package for R. \url{https://cran.r-project.org/web/packages/doRedis}.
+
 %% IRLBA implementations and supplemental code
 \bibitem{irlbar}
-Lewis, Bryan,  \url{https://cran.r-project.org/web/packages/irlba}.
+Lewis, Bryan. The irlba package for R.  \url{https://cran.r-project.org/web/packages/irlba}.
 
 \bibitem{sup}
-Lewis, Bryan,  \url{https://github.com/bwlewis/tcor}.
+Lewis, Bryan. The tcor package for R.  \url{https://github.com/bwlewis/tcor}.
 
 %% Approximate correlation
 \bibitem{timeseries}
@@ -815,6 +826,10 @@ Mueen, Abdullah, Suman Nath, and Jie Liu. Fast approximate correlation for massi
 %% Applications in genomics
 \bibitem{genomics}
 Song, Lin, Peter Langfelder, and Steve Horvath. Comparison of co-expression measures: mutual information, correlation, and model based indices. BMC bioinformatics 13.1 (2012): 328.
+
+%% foreach
+\bibitem{foreach}
+Weston, Steve. The foreach package for R. \url{https://cran.r-project.org/web/packages/foreach/vignettes/foreach.pdf}.
 
 %% SVD similarity -- extremely similar to the approach in this paper!
 %% Applied to images
