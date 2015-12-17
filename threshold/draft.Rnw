@@ -84,14 +84,13 @@ Paradigm4, Inc.
 
 Efficiently computing a subset of a correlation matrix consisting of values
 above a specified threshold is important to many practical applications.
-Real-world problems in genomics, machine learning, financial and other time
-series and other applications can produce correlation matrices too large to
-explicitly form and tractably compute. Often, only values corresponding to
-highly-correlated vectors are of interest, and those values typically make up a
-small fraction of the overall correlation matrix. We present a method based on
-the singular value decomposition (SVD) and its relationship to the data
-covariance structure that can efficiently compute thresholded subsets of very
-large correlation matrices.
+Real-world problems in genomics, machine learning, finance other applications
+can produce correlation matrices too large to explicitly form and tractably
+compute. Often, only values corresponding to highly-correlated vectors are of
+interest, and those values typically make up a small fraction of the overall
+correlation matrix. We present a method based on the singular value
+decomposition (SVD) and its relationship to the data covariance structure that
+can efficiently compute thresholded subsets of very large correlation matrices.
 
 \end{abstract}
 
@@ -200,7 +199,7 @@ $A$, $1\le i,j\le n$. Then
 \sigma_k^2 (e_i^Tv_{k} - e_j^Tv_{k})^2,
 \end{equation}
 \end{lemma}
-where here and below, $e_{j}\in\mathcal{R}^n$ represents the $j$th unit basis
+where, here and below, $e_{j}\in\mathcal{R}^n$ represents the $j$th unit basis
 vector consisting of $1$ in position $j$ and zeros otherwise.
 (Thus, $e_j^Tv_{k}$ is the $j$th position in the vector $v_k$--that is, the
 $[j,k]$ entry in the matrix $V$.)
@@ -272,11 +271,11 @@ the correlation threshold.
 
 Let $D^i\in\mathcal{R}^{n-i, n}$, $i=1,2,\ldots,n-1$, be the $i$th order finite
 difference matrix with $-1$ along the diagonal, $1$ along the $i$th
-super-diagonal, and zeros elsewhere.  Consider just adjacent points of $P v_1$.
-Then $D^1P v_1$ consists of the differences of adjacent entries in $P v_1$.
-Entries such that $\sigma_1^2 (D^1 P v_1)^2 > 2(1-t)$ correspond to pairs of
-vectors that do not meet the correlation threshold, where here and below
-an exponent applied to a vector denotes element-wise exponentiation.
+super-diagonal, and zeros elsewhere.  Then $D^1P v_1$ consists of the
+differences of adjacent entries in $P v_1$.  Entries such that $\sigma_1^2 (D^1
+P v_1)^2 > 2(1-t)$ correspond to pairs of vectors that do not meet the
+correlation threshold, where here and below an exponent applied to a vector
+denotes element-wise exponentiation.
 
 Even a 1-d projected interval distance threshold may prune many possible
 non-adjacent vector pairs with respect to the ordering defined by $P$ as
@@ -401,7 +400,7 @@ available for R\cite{irlbar}, Matlab\cite{irlbam}, and Python\cite{irlbap}.
 
 We can relax the column mean and scale assumptions without introducing much
 additional computational or storage overhead as follows. Assume $A$ is an
-$m\times n$ real-valued matrix without constant-valued columns. Let
+$m\times n$ real-valued matrix without any constant-valued columns. Let
 $z=[z_1,z_2,\ldots,z_n]\in\mathcal{R}^n$ represent the vector of column means
 of the $m\times n$ matrix $A$, $w=[w_1^2,w_2^2,\ldots,w_n^2]\in\mathcal{R}^n$
 be the vector of squared column norms of $A$, and $W\in\mathcal{R}^{n\times n}$
@@ -421,11 +420,16 @@ The R implementation\cite{irlbar} of IRLBA includes arguments for centering and
 scaling the input matrix.
 
 A full/na\"ive thresholded correlation computation requires $O(n^2 m)$ flops.
-Let $p$ be the selected IRLBA dimension. Then the proposed method requires
+Let $p$ be the selected IRLBA dimension. Then Algorithm \ref{prune} requires
 $O(n p \ell)$ flops, where $\ell$ is the longest run of ordered entries in
 $v_1$ that meet the 1-d projected distance threshold $\sqrt{2(1-t)}/\sigma_1$,
-plus the flops required by IRLBA and the post-processing step 7 (also $O(np)$).
-
+including the flops required by IRLBA and final thresholding in step 7.  The
+main computational savings of $\frac{nm}{lp}$ depends on the rate of decay in
+the singular values of $A$, the subspace dimension $p$, and the desired
+threshold value. We remark that this estimate of computational savings is
+available already in step 3 of Algorithm \ref{prune} after only modest
+computational effort. Users might use this cheap estimate to, for example,
+alter their threshold in some cases.
 
 
 \section{Numerical experiments}\label{examples}
@@ -436,7 +440,7 @@ A10-7850K 3.7$\,$GHz Athlon quad-core CPU and 16$\,$GB 1333$\,$MHz unbuffered
 RAM running the Ubuntu 12.04.5 GNU/Linux OS. Tests were performed with 64-bit R
 version 3.1.2 using double-precision arithmetic and the OpenBLAS library
 version 0.1alpha2.2-3 (based on Goto's BLAS version 1.13) with {\tt
-OMP\_NUM\_THREADS=4}. The last experiment includes a test run on a Linux
+OMP\_NUM\_THREADS=1}. The last experiment includes a test run on a Linux
 cluster as described in the text.
 
 All examples use the reference R implementation, {\tt tcor()}, which can be
