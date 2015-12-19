@@ -1,11 +1,11 @@
-%
 %% Instructions for processing this document into a PDF document
 %%
-%% FIRST NOTE, you need the 'biclust' package installed in R.
+%% FIRST NOTE, you need the 'xtable' and 'biclust' packages installedi in R.
 %% Some of the examples will come from data sets in this package.
 %% You can install it from the R console with, for example:
 %%
 %% install.packages("biclust",repos="http://cran.case.edu")
+%% install.packages("xtable",repos="http://cran.case.edu")
 %%
 %% Now you can prepare the PDF of the paper with any of:
 %%
@@ -21,16 +21,16 @@
 %%
 %% Note that you should probably run the above a few times because
 %% LaTeX generally takes a few runs to get reference numbers right.
-%%
-\documentclass[10pt]{article}
+
+\documentclass[article]{jss}
+%% need no \usepackage{Sweave.sty}
 
 \usepackage{amsmath}
 \usepackage{hyperref}
 
+
 \newtheorem{theorem}{Theorem}[section]
 \newtheorem{lemma}[theorem]{Lemma}
-\newtheorem{proposition}[theorem]{Proposition}
-\newtheorem{corollary}[theorem]{Corollary}
 
 \newenvironment{proof}[1][Proof]{\begin{trivlist}
 \item[\hskip \labelsep {\bfseries #1}]}{\end{trivlist}}
@@ -62,26 +62,21 @@
 \author{
 James Baglama\\
 University of Rhode Island
-\and
+\And
 Michael Kane\\
 Yale University
-\and
+\AND
 Bryan Lewis\\
 Paradigm4, Inc.\\
-\and
+\And
 Alex Poliakov\\
 Paradigm4, Inc.
 }
+\Plainauthor{James Baglama, Michael Kane, Bryan Lewis, Alex Poliakov}
+\Plaintitle{Efficient Thresholded Correlation using Truncated Singular Value Decomposition}
+\Shorttitle{Efficient Thresholded Correlation}
 
-\date{}
-
-
-\begin{document}
-\SweaveOpts{concordance=TRUE}
-\maketitle
-
-\begin{abstract}
-
+\Abstract{
 Efficiently computing a subset of a correlation matrix consisting of values
 above a specified threshold is important to many practical applications.
 Real-world problems in genomics, machine learning, finance other applications
@@ -91,19 +86,30 @@ interest, and those values typically make up a small fraction of the overall
 correlation matrix. We present a method based on the singular value
 decomposition (SVD) and its relationship to the data covariance structure that
 can efficiently compute thresholded subsets of very large correlation matrices.
+}
+\Keywords{thresholded correlation, SVD, \proglang{R}}
+\Plainkeywords{thresholded correlation, SVD, R}
+\Address{
+James Baglama, Chair of Mathematics\\
+Department of Mathematics\\
+University of Rhode Island\\
+Kingston, Rhode Island 02881\\
+E-mail: \email{jbaglama@math.uri.edu}\\
+URL: \url{http://www.math.uri.edu/~jbaglama}\\
+}
 
-\end{abstract}
 
+\begin{document}
 
 \section{Introduction}\label{intro}
 
 Finding highly-correlated pairs among a large set of vectors is an important
 part of many applications. For instance, subsets of highly-correlated vectors
 of gene expression values may be used in the discovery of networks of genes
-relevant to particular biological processes\cite{genomics}.  Identification of
+relevant to particular biological processes \citep{genomics}.  Identification of
 highly-correlated pairs may be used in feature selection algorithms for machine
-learning applications\cite{ml1, ml2} and are important to time series and
-image processing applications\cite{timeseries, svd-similarity}.
+learning applications \citep{ml1, ml2} and are important to time series and
+image processing applications \citep{timeseries, svd-similarity}.
 
 The number of correlation coefficients grows quadratically with the number of
 vectors. Simply computing all pairs of correlation coefficients and then
@@ -113,12 +119,12 @@ Considerable attention has been devoted to \emph{pruning
 methods} that cheaply prune away all but the most highly-correlated pairs of
 vectors.  For example the TAPER and related algorithms of Xiong et al. develop
 pruning rules based on the frequency of mutually co-occurring observations (rows)
-among vector pairs; see \cite{prune1, prune2} and the references therein.
+among vector pairs; see \citep{prune1, prune2} and the references therein.
 Related methods approximate a set containing the most highly-correlated
-pairs using hashing algorithms\cite{prune3}. A number of other methods arrive
+pairs using hashing algorithms \citep{prune3}. A number of other methods arrive
 at approximate sets of the most highly-correlated pairs using
 dimensionality-reduction techniques like the discrete Fourier
-transform\cite{timeseries}. The method of Wu, et al.\cite{svd-similarity},
+transform \citep{timeseries}. The method of Wu, et al. \citep{svd-similarity},
 conceptually very similar to our approach, uses the singular value
 decomposition (SVD) to find all pairs of close vectors with respect to a
 distance metric (instead of correlation).  Our method finds all of the most
@@ -378,8 +384,8 @@ filter the thresholded values in step 7 (decreasing work as $p$ increases).
 
 Most of the floating point operations occur in step 4 of Algorithm \ref{prune}.
 Fortunately the $\ell$ evaluations in step 4 are independent of each other and
-can easily be computed in parallel. See the reference R
-implementation\cite{sup} for an example.
+can easily be computed in parallel. See the reference \proglang{R}
+implementation \citep{sup} for an example.
 
 
 \section{General matrices and fast truncated SVD}\label{irlba}
@@ -394,9 +400,10 @@ as required in step 5 of Algorithm \ref{prune}. Fortunately all desires are met
 by one algorithm.
 
 The augmented implicitly restarted Lanczos bidiagonalization algorithm\break(IRLBA)
-of Baglama and Reichel \cite{irlba} efficiently computes truncated singular value
+of Baglama and Reichel \citep{irlba} efficiently computes truncated singular value
 decompositions of large dense or sparse matrices. Reference implementations are
-available for R\cite{irlbar}, Matlab\cite{irlbam}, and Python\cite{irlbap}.
+available for \proglang{R} \citep{irlbar}, \proglang{Matlab} \citep{irlbam},
+and \proglang{Python} \citep{irlbap}.
 
 We can relax the column mean and scale assumptions without introducing much
 additional computational or storage overhead as follows. Assume $A$ is an
@@ -416,10 +423,10 @@ problems replaces matrix-vector products of the form $Ax$ with $AWx - ez^TWx$ in
 the iterations, implicitly working with a scaled and centered matrix without
 forming it.  This comes at the cost of storing two additional length $n$ vectors and
 at most computing two additional vector inner products per matrix-vector product.
-The R implementation\cite{irlbar} of IRLBA includes arguments for centering and
+The \proglang{R} implementation \citep{irlbar} of IRLBA includes arguments for centering and
 scaling the input matrix.
 
-A full/na\"ive thresholded correlation computation requires $O(n^2 m)$ flops.
+A na\"ive brute force thresholded correlation computation requires $O(n^2 m)$ flops.
 Let $p$ be the selected IRLBA dimension. Then Algorithm \ref{prune} requires
 $O(n p \ell)$ flops, where $\ell$ is the longest run of ordered entries in
 $v_1$ that meet the 1-d projected distance threshold $\sqrt{2(1-t)}/\sigma_1$,
@@ -434,24 +441,25 @@ alter their threshold in some cases.
 
 \section{Numerical experiments}\label{examples}
 
-We evaluated the algorithm using two public gene expression and methylation
-datasets.  Most tests were performed on a desktop PC with a single AMD
-A10-7850K 3.7$\,$GHz Athlon quad-core CPU and 16$\,$GB 1333$\,$MHz unbuffered
-RAM running the Ubuntu 12.04.5 GNU/Linux OS. Tests were performed with 64-bit R
-version 3.1.2 using double-precision arithmetic and the OpenBLAS library
-version 0.1alpha2.2-3 (based on Goto's BLAS version 1.13) with {\tt
-OMP\_NUM\_THREADS=1}. The last experiment includes a test run on a Linux
-cluster as described in the text.
+We evaluated the algorithm using public gene expression and DNA methylation
+datasets from the \proglang{R} {\tt biclust} \citep{biclust} package and from
+the Cancer Genome Atlas \citep{gdac}, referred to as TCGA.  Most tests were
+performed on a desktop PC with a single AMD A10-7850K 3.7$\,$GHz Athlon
+quad-core CPU and 16$\,$GB 1333$\,$MHz unbuffered RAM running the Ubuntu 15.10
+GNU/Linux OS. Tests were performed with 64-bit \proglang{R} version 3.2.3 using
+double-precision arithmetic and the OpenBLAS library version 0.2.14-1ubuntu1
+(based on Goto's BLAS version 1.13) with {\tt OMP\_NUM\_THREADS=1}. The last
+experiment includes a test run on a Linux cluster described in that section.
 
-All examples use the reference R implementation, {\tt tcor()}, which can be
-installed for the R language from the development GitHub repository using the
+All examples use the reference \proglang{R} implementation, {\tt tcor()}, which can be
+installed from the development GitHub repository using the
 {\tt devtools} package with:
 
 <<eval=FALSE,echo=TRUE>>=
 devtools::install_github("bwlewis/tcor")
 @
 
-The native R {\tt cor()} function is a general function that can compute
+The native \proglang{R} {\tt cor()} function is a general function that can compute
 several different types of correlation matrices including Pearson, Spearman,
 and Kendall and includes a number of options for dealing with missing values.
 Because of its flexibility, the native {\tt cor()} function does not always
@@ -468,7 +476,7 @@ matrix computation computed in the fastest way we can, directly using matrix
 multiplication instead of using the slower {\tt cor()} function.
 
 
-\subsection{Small EisenYeast example}
+\subsection{Small gene expression example}
 
 The first example is a small proof of concept that provides the data for Figure
 \ref{fig1} and establishes our timing and memory use measurement methodology.
@@ -477,7 +485,7 @@ memory required to store the input data matrix is reported in megabytes.
 
 Anyone can quickly run the example to experiment with the algorithm and
 compare its output with brute force results. The example uses the {\tt
-EisenYeast} data from the {\tt biclust} R package\cite{biclust}.
+EisenYeast} data from the {\tt biclust} \proglang{R} package \citep{biclust}.
 The data consist of 80 experiments involving the
 Saccharomyces Cerevisiae yeast measuring gene expression data across 6,221
 Affymetrix probes, represented as a $80\times 6221$ real-valued matrix.  The
@@ -486,12 +494,15 @@ Pearson correlation value of 0.95.  We use a projected dimension $p=10$
 in {\tt tcor()}.
 \begin{small}
 <<eval=TRUE,echo=TRUE>>=
-library(irlba)
-source("tcor.R")  # XXX Replace later with tcor pacakge XXX XXX
+library(tcor)
+library(doMC)     # local parallel computation
 library(biclust)  # for the BicatYeast data
 data(EisenYeast)  # in gene by sample orientation
 A = t(EisenYeast) # to correlate genes to genes
 threshold = 0.95
+
+# Register a four-core multicore parallel backend
+registerDoMC(4)
 
 # Compute using tcor():
 m1  = sum(gc()[,2])  # Memory in megabytes currently in use
@@ -535,11 +546,12 @@ print(
 Performance benefits from the {\tt tcor()} function become apparent with more
 data.  The following example uses calculated beta values from the Illumina
 Human Methylation450 BeadChip of 80 Adenoid Cystic Carcinoma (ACC) tumor
-samples obtained from the Broad GDAC Cancer Genome Atlas dashboard\cite{gdac}.
-See the supplemental code\cite{sup} for examples of efficiently converting the
-downloaded sample methylation data into an R matrix. We chose these data for
-their public availability as a general example of computing thresholded
-correlation among sets of large numbers of vectors.
+samples obtained from the Broad GDAC Cancer Genome Atlas dashboard \citep{gdac}.
+See the \proglang{R} package implementation \citep{sup} for examples of
+efficiently converting the downloaded sample methylation data into an R matrix.
+We chose these data for their public availability as a general example of
+computing thresholded correlation among sets of large numbers of vectors,
+rather than for any specific biological meaning.
 
 We removed 91,563 columns with all constant or missing values from the data,
 leaving an $80\times 394014$ matrix. The example computes pairs of methylation
@@ -548,6 +560,13 @@ beta value column vectors with correlation values of 0.99 or more. We used a
 methodology used in the first example. Despite its low rank and modest data
 size, the problem is too large to compute using a na\"ive brute force
 correlation method.
+
+Our simple brute force implementation was not possible due to memory constraints.
+We remark that the matrix multiplication central to the brute force
+implementation can be decomposed into a sequence of smaller steps to
+fit within given memory constraints. However, the brute force algorithm would still
+need to evaluate all of the nearly 160 billion possible vector pair correlation
+values.
 
 Algorithm \ref{prune} identified 913,601 pairs of vectors with correlation
 values of 0.99 or more in about three hours on our test PC. A brute force
@@ -562,35 +581,66 @@ results run on a modest GNU/Linux cluster at Paradigm4, Inc. The cluster
 consisted of four computers connected by 10 gigabit ethernet. Each computer
 contained two Intel Xeon E5-2650 2$\,$GHz CPUs (16 physical CPU cores per
 computer) and 64$\,$GB/1,600$\,$MHz ECC registered RAM running CentOS 6.6 and
-64-bit R version 3.2.2 with the reference R BLAS library.
+64-bit \proglang{R} version 3.2.2 with the reference \proglang{R} BLAS library.
 
-No code change was required to run in parallel on the cluster. The reference R
-{\tt tcor()} implementation uses R's {\tt foreach}\cite{foreach} framework to
+No code change was required to run in parallel on the cluster. The reference \proglang{R}
+{\tt tcor()} implementation uses \proglang{R}'s {\tt foreach} \citep{foreach} framework to
 run on arbitrary parallel configurations (``back ends''). We simply registered
-a {\tt doRedis}\cite{doredis} parallel back end with 16 R workers per computer
-(64 total R worker processes) prior to invoking {\tt tcor()}.
+a {\tt doRedis} \citep{doredis} parallel back end with 16 \proglang{R} workers per computer
+(64 total \proglang{R} worker processes) prior to invoking {\tt tcor()}.
 
 The results computed on the Linux cluster are marked ``tcor (64 core cluster)''
 below. The cluster example computed the filtering step 7 of Algorithm
-\ref{prune} in parallel across the 64 remote R processes. That approach incurs,
+\ref{prune} in parallel across the 64 remote \proglang{R} processes. That approach incurs,
 in this example, an additional memory overhead of about 16$\,$GB because each
-remote R process requires access to a copy of the data matrix $A$. More thrifty
+remote \proglang{R} process requires access to a copy of the data matrix $A$. More thrifty
 adaptations of the algorithm are possible and could, for example, share the
-memory required by $A$ between worker R processes on each computer.
+memory required by $A$ between worker \proglang{R} processes on each computer.
 
 <<echo=FALSE, results=tex>>=
-# Default values:
-t1=10449.670
+# Test system values:
+t1=10309
 t3=482
 t4=NA
-m1=1261.6
+m1=389.1
 m3=994.3
 m4=42282.4
 
 if(Sys.getenv("RUN_EXAMPLES")=="TRUE")
 {
- # methylation data
-}
+  library(doMC)
+  system("wget http://gdac.broadinstitute.org/runs/stddata__2015_08_21/data/ACC/20150821/gdac.broadinstitute.org_ACC.Merge_methylation__humanmethylation450__jhu_usc_edu__Level_3__within_bioassay_data_set_function__data.Level_3.2015082100.0.0.tar.gz")
+  cmd = "cat ACC.methylation__humanmethylation450__jhu_usc_edu__Level_3__within_bioassay_data_set_function__data.data.txt  | tail -n +%s | cut -d '       ' -f 2,6,10,14,18,22,26,30,34,38,42,46,50,54,58,62,66,70,74,78,82,86,90,94,98,102,106,110,114,118,122,126,130,134,138,142,146,150,154,158,162,166,170,174,178,182,186,190,194,198,202,206,210,214,218,222,226,230,234,238,242,246,250,254,258,262,266,270,274,278,282,286,290,294,298,302,306,310,314,318"
+  N = 485579  # total number of lines
+  h = 2       # total header lines
+  # Read the first header line with sample IDs:
+  f = pipe(cmd, open="r")
+  id = as.vector(read.table(f, sep="\t", stringsAsFactors=FALSE, header=FALSE, nrows=1))
+  close(f)
+  # Read the rest of the file in parallel. I prefer doMC/foreach over mclapply for this because foreach can combine results incrementally.
+  registerDoMC(4)  # four cores on our test machine
+  block = floor((N - h)/cores)
+  acc = foreach(j=1:cores, .combine=rbind) %dopar%
+  {
+    skip = block * (j - 1) + h + 1
+    nrows = ifelse(j == cores, -1, block)
+    f = pipe(sprintf(cmd, skip), open="r")
+    on.exit(close(f))
+    read.table(f, sep="\t", stringsAsFactors=FALSE, header=FALSE, nrows=nrows)
+  }
+  acc = t(acc)
+  # OK, the example data are parsed and in acc. proceed as in the smaller example.
+  threshold = 0.99
+  # Compute using tcor():
+  m1  = sum(gc()[,2])  # Memory in megabytes currently in use
+  t1  = proc.time()
+  tx  = tcor(acc, t=threshold, p=10)
+  t1  = (proc.time() - t1)[3] # Time in seconds
+  m1  = sum(gc()[,6]) - m1    # Peak excess memory use during the test
+  
+  # The cluster example proceeds similarly, but registers a doRedis backend
+  # instead of the doMC backend before invoking tcor...
+} # end if run examples
 require(xtable)
 ans = data.frame(Method=c("tcor (4 core PC)", "tcor (64 core cluster)", ""), `Wall clock time (s)`=c(t1, t3, t4), `Memory use (MB)`=c(m1, m3, m4), " "=c("","(local)","(remote)"), check.names=FALSE)
 print(
@@ -598,17 +648,10 @@ print(
         caption = "TCGA ACC Methylation450 (80 rows x 394,014 columns, threshold=0.99). Linux cluster results include master R process memory use (local) plus total peak memory used by all 64 worker R processes (remote).", label = "TCGA3", caption.placement = "top")
   ,size="small", table.placement="ht", include.rownames=FALSE, NA.string="")
 @
-From a set of almost 400 billion pairs of vectors, Algorithm \ref{prune} finds 913,601
+From a set of almost 160 billion pairs of vectors, Algorithm \ref{prune} finds 913,601
 pairs with correlation values of 0.99 or more on a modest Linux
-cluster in about 8 minutes. The same algorithm also runs, although slower, in
-the constrained memory setting of a desktop PC.
-
-%%<<eval=TRUE,echo=FALSE>>=
-%%library(irlba)
-%%
-%%print("R code here")
-%%@
-
+cluster in about 8 minutes. The same algorithm works, more slowly, in
+the constrained memory setting of a desktop PC without modification.
 
 
 
@@ -619,20 +662,29 @@ subspaces applies to distance metrics similarly to correlation. Lemma
 \ref{sumlemma} decomposes Euclidean distance between two vectors in terms of
 singular basis vectors and Algorithm \ref{prune} can be applied directly to the
 problem of finding all pairs of vectors that meet a thresholded Euclidean
-distance with small changes in steps 3, 4, and 7.  And, by equivalence of
-norms, thresholded Euclidean distance can be extended to other distance
-metrices similarly. The reference R implementation\cite{sup} includes functions
-for general thresholded distance computation.
+distance with small changes in steps 3, 4, and 7.  By equivalence of norms,
+thresholded Euclidean distance can be extended to other distance metrics. The
+reference \proglang{R} implementation \citep{sup} includes functions for thresholded
+distance and correlation.
 
-
+The ideas presented here can be adapted to efficiently find the top N most
+correlated vector pairs for a given constant N similarly to the work of
+Xiong et al. \citep{prune2}.
 
 \section{Conclusion}\label{conclusion}
 
+We present a simple algorithm and reference \proglang{R} implementation based on a
+truncated singular value decomposition (SVD) that efficiently computes
+thresholded subsets of large correlation and distance matrices.  We show that
+the natural connection between data covariance and the SVD can result in
+substantial computational and memory savings, and illustrate these savings with
+a few genomics data experiments.  Moreover, the main computational work in the
+algorithm is easily parallelized and easily deployed across computational
+clusters.
 
 
 
 \bibliography{bibliography}{}
-\bibliographystyle{plain}
 
 
 \end{document}
