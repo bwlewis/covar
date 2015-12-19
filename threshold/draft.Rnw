@@ -154,7 +154,7 @@ $\Sigma$.  Denote the columns of $V$ as $V=[v_1, v_2, \ldots, v_k]$, where each
 $v_j\in\mathcal{R}^n$, $j=1,2,\ldots,k$.  Then $\mathrm{cor}(A) = A^TA =
 V\Sigma^2 V^T$ is a symmetric eigenvalue decomposition of the correlation
 matrix with nonzero eigenvalues $\sigma_1^2, \sigma_2^2, \ldots, \sigma_k^2$.
-The span of the columns of $V$ form an orthonormal basis of the range of the
+The columns of $V$ form an orthonormal basis of the range of the
 correlation matrix $A^TA$.
 
 Let $a_i$ and $a_j$, $1\le i,j\le n$ be any two columns of the matrix $A$
@@ -326,8 +326,8 @@ Following this process, we can produce a well-pruned candidate set of vector
 pairs that contains all pairs that meet a given correlation threshold using
 $\ell$ matrix vector products with matrices of order $n \times p$, where $p$ is
 chosen in practice such that $p<<k$. Setting $p=10$ for the example shown in
-Figure \ref{fig1} prunes all but $431$ possible vector pairs out of a total
-$419(419-1)/2 = 87,571$ with $\ell=138$.
+Figure \ref{fig1} prunes all but $12,924$ possible vector pairs out of a total
+$6221(6221 - 1) = 193,47,310$ with $\ell=1,715$.
 
 These steps are formalized in Algorithm \ref{prune} below. The algorithm
 proceeds in two main parts: steps 1--6 prune pairs of vectors down to a small
@@ -409,7 +409,7 @@ We can relax the column mean and scale assumptions without introducing much
 additional computational or storage overhead as follows. Assume $A$ is an
 $m\times n$ real-valued matrix without any constant-valued columns. Let
 $z=[z_1,z_2,\ldots,z_n]\in\mathcal{R}^n$ represent the vector of column means
-of the $m\times n$ matrix $A$, $w=[w_1^2,w_2^2,\ldots,w_n^2]\in\mathcal{R}^n$
+of $A$, $w=[w_1^2,w_2^2,\ldots,w_n^2]\in\mathcal{R}^n$
 be the vector of squared column norms of $A$, and $W\in\mathcal{R}^{n\times n}$
 a diagonal matrix with diagonal entries $1/\sqrt{w_i^2 - m z_i^2}$.  Let
 $e\in\mathcal{R}^m$ be a vector of all ones.  Then $(A - ez^T)W$ is a centered
@@ -473,7 +473,7 @@ from optimized BLAS routines, but not as much, as it mostly makes use of Level
 
 We compare the {\tt tcor()} function with brute-force Pearson correlation
 matrix computation computed in the fastest way we can, directly using matrix
-multiplication instead of using the slower {\tt cor()} function.
+multiplication instead of using the more general {\tt cor()} function.
 
 
 \subsection{Small gene expression example}
@@ -488,7 +488,7 @@ compare its output with brute force results. The example uses the {\tt
 EisenYeast} data from the {\tt biclust} \proglang{R} package \citep{biclust}.
 The data consist of 80 experiments involving the
 Saccharomyces Cerevisiae yeast measuring gene expression data across 6,221
-Affymetrix probes, represented as a $80\times 6221$ real-valued matrix.  The
+Affymetrix probes, represented as an $80\times 6221$ real-valued matrix.  The
 example finds all pairs of columns (gene expression measurements) that meet or exceed a
 Pearson correlation value of 0.95.  We use a projected dimension $p=10$
 in {\tt tcor()}.
@@ -535,7 +535,7 @@ require(xtable)
 ans = data.frame(Method=c("tcor","brute force"), `Wall clock time (s)`=c(t1, t2), `Peak excess memory use (MB)`=c(m1, m2), check.names=FALSE)
 print(
     xtable(ans,
-        caption = "EisenYeast results, threshold=0.95", label = "EisenYeast", caption.placement = "top")
+        caption = "Gene expression results, threshold=0.95", label = "EisenYeast", caption.placement = "top")
   ,size="small", table.placement="ht", include.rownames=FALSE)
 @
 
@@ -550,7 +550,7 @@ samples obtained from the Broad GDAC Cancer Genome Atlas dashboard \citep{gdac}.
 See the \proglang{R} package implementation \citep{sup} for examples of
 efficiently converting the downloaded sample methylation data into an R matrix.
 We chose these data for their public availability as a general example of
-computing thresholded correlation among sets of large numbers of vectors,
+computing thresholded correlation among large numbers of vectors,
 rather than for any specific biological meaning.
 
 We removed 91,563 columns with all constant or missing values from the data,
@@ -559,14 +559,11 @@ beta value column vectors with correlation values of 0.99 or more. We used a
 {\tt tcor} projection dimension of 10 and the same performance measurement
 methodology used in the first example. Despite its low rank and modest data
 size, the problem is too large to compute using a na\"ive brute force
-correlation method.
-
-Our simple brute force implementation was not possible due to memory constraints.
-We remark that the matrix multiplication central to the brute force
-implementation can be decomposed into a sequence of smaller steps to
-fit within given memory constraints. However, the brute force algorithm would still
-need to evaluate all of the nearly 160 billion possible vector pair correlation
-values.
+correlation method.  (We remark that the matrix multiplication central to the
+brute force implementation can be decomposed into a sequence of smaller steps
+to fit within given memory constraints. However, the brute force algorithm
+would still need to evaluate all of the nearly 160 billion possible vector pair
+correlation values.)
 
 Algorithm \ref{prune} identified 913,601 pairs of vectors with correlation
 values of 0.99 or more in about three hours on our test PC. A brute force
@@ -679,7 +676,7 @@ thresholded subsets of large correlation and distance matrices.  We show that
 the natural connection between data covariance and the SVD can result in
 substantial computational and memory savings, and illustrate these savings with
 a few genomics data experiments.  Moreover, the main computational work in the
-algorithm is easily parallelized and easily deployed across computational
+algorithm is easily parallelized and deployed across computational
 clusters.
 
 
