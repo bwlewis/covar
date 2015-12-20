@@ -271,18 +271,7 @@ $t=0.99$ placed at an arbitrary vertical axis location.
 
 \begin{figure}[!ht]
 \begin{center}
-<<eval=TRUE, echo=FALSE, fig=TRUE, height=5, width=7>>=
-library(biclust)
-data(EisenYeast)
-A = t(EisenYeast)
-A = sweep(A, 2, apply(A,2,mean), FUN=`-`)
-A = sweep(A, 2, sqrt(apply(A,2,crossprod)), FUN=`/`)
-s = svd(A)
-i = order(s$v[,1])
-plot(s$v[i,1], ylab=expression(P * v[1]), xlab="Sorted index", pch='.')
-t=0.99
-abline(h=c(0, sqrt(2*(1-t))/s$d[1]), col=2, lwd=1)
-@
+\includegraphics{draft-001}
 \caption{
 Example plot of the ordered entries of $v_1$ for the EisenYeast example from
 Section \ref{examples}. The red lines illustrate the interval corresponding
@@ -474,9 +463,11 @@ All examples use the reference \proglang{R} implementation, {\tt tcor()}, which 
 installed from the development GitHub repository using the
 {\tt devtools} package with:
 
-<<eval=FALSE,echo=TRUE>>=
-devtools::install_github("bwlewis/tcor")
-@
+\begin{Schunk}
+\begin{Sinput}
+> devtools::install_github("bwlewis/tcor")
+\end{Sinput}
+\end{Schunk}
 
 The native \proglang{R} {\tt cor()} function is a general function that can compute
 several different types of correlation matrices including Pearson, Spearman,
@@ -512,36 +503,35 @@ example finds all pairs of columns (gene expression measurements) that meet or e
 Pearson correlation value of 0.95.  We use a projected dimension $p=10$
 in {\tt tcor()}.
 \begin{small}
-<<eval=TRUE,echo=TRUE>>=
-library(tcor)
-library(doMC)     # local parallel computation
-library(biclust)  # for the BicatYeast data
-data(EisenYeast)  # in gene by sample orientation
-A = t(EisenYeast) # to correlate genes to genes
-threshold = 0.95
-
-# Register a four-core multicore parallel backend
-registerDoMC(4)
-
-# Compute using tcor():
-m1  = sum(gc()[,2])  # Memory in megabytes currently in use
-t1  = proc.time()
-tx  = tcor(A, t=threshold, p=10)
-t1  = (proc.time() - t1)[3] # Time in seconds
-m1  = sum(gc()[,6]) - m1    # Peak excess memory use during the test
-
-# Fast brute force full correlation:
-m2  = sum(gc()[,2])
-t2  = proc.time()
-mu = colMeans(A)
-s  = sqrt(apply(A, 2, crossprod) - nrow(A) * mu ^ 2)
-cs = scale(A, center=mu, scale=s)  # scale and center the data
-cx = crossprod(cs)                 # full correlation matrix
-cx  = cx * upper.tri(cx)    # ignore symmetry and diagonal
-pairs = which(cx >= threshold, arr.ind=TRUE)
-t2  = (proc.time() - t2)[3]
-m2  = sum(gc()[,6]) - m2
-@
+\begin{Schunk}
+\begin{Sinput}
+> library(tcor)
+> library(doMC)     # local parallel computation
+> library(biclust)  # for the BicatYeast data
+> data(EisenYeast)  # in gene by sample orientation
+> A = t(EisenYeast) # to correlate genes to genes
+> threshold = 0.95
+> # Register a four-core multicore parallel backend
+> registerDoMC(4)
+> # Compute using tcor():
+> m1  = sum(gc()[,2])  # Memory in megabytes currently in use
+> t1  = proc.time()
+> tx  = tcor(A, t=threshold, p=10)
+> t1  = (proc.time() - t1)[3] # Time in seconds
+> m1  = sum(gc()[,6]) - m1    # Peak excess memory use during the test
+> # Fast brute force full correlation:
+> m2  = sum(gc()[,2])
+> t2  = proc.time()
+> mu = colMeans(A)
+> s  = sqrt(apply(A, 2, crossprod) - nrow(A) * mu ^ 2)
+> cs = scale(A, center=mu, scale=s)  # scale and center the data
+> cx = crossprod(cs)                 # full correlation matrix
+> cx  = cx * upper.tri(cx)    # ignore symmetry and diagonal
+> pairs = which(cx >= threshold, arr.ind=TRUE)
+> t2  = (proc.time() - t2)[3]
+> m2  = sum(gc()[,6]) - m2
+\end{Sinput}
+\end{Schunk}
 \end{small}
 Brute-force computation outperforms {\tt tcor()} in this small first example in
 speed but consumes substantially more memory.  Each algorithm identifies the
@@ -549,15 +539,23 @@ same set of 125 gene expression pairs that exceed the specified correlation
 threshold of 0.95, with comparative timing and memory use shown in the
 following table.
 
-<<echo=FALSE, results=tex>>=
-require(xtable)
-ans = data.frame(Method=c("tcor","brute force"), `Wall clock time (s)`=c(t1, t2), `Peak excess memory use (MB)`=c(m1, m2), check.names=FALSE)
-print(
-    xtable(ans,
-        caption = "Gene expression results, threshold=0.95", label = "EisenYeast", caption.placement = "top")
-  ,size="small", table.placement="ht", include.rownames=FALSE)
-@
-
+% latex table generated in R 3.2.3 by xtable 1.8-0 package
+% Sun Dec 20 09:52:31 2015
+\begin{table}[ht]
+\centering
+{\small
+\begin{tabular}{lrr}
+  \hline
+Method & Wall clock time (s) & Peak excess memory use (MB) \\ 
+  \hline
+tcor & 3.19 & 59.60 \\ 
+  brute force & 1.74 & 1075.10 \\ 
+   \hline
+\end{tabular}
+}
+\caption{Gene expression results, threshold=0.95} 
+\label{EisenYeast}
+\end{table}
 
 
 \subsection{TCGA DNA methylation example}
@@ -613,68 +611,24 @@ remote \proglang{R} process requires access to a copy of the data matrix $A$. Mo
 adaptations of the algorithm are possible and could, for example, share the
 memory required by $A$ between worker \proglang{R} processes on each computer.
 
-<<echo=FALSE, results=tex>>=
-# Test system values:
-t1=10309
-t3=482
-t4=NA
-m1=389.1
-m3=994.3
-m4=42282.4
-
-if(Sys.getenv("RUN_EXAMPLES")=="TRUE")
-{
-  library(doMC)
-  system("wget http://gdac.broadinstitute.org/runs/stddata__2015_08_21/data/ACC/20150821/gdac.broadinstitute.org_ACC.Merge_methylation__humanmethylation450__jhu_usc_edu__Level_3__within_bioassay_data_set_function__data.Level_3.2015082100.0.0.tar.gz")
-  cmd = "cat ACC.methylation__humanmethylation450__jhu_usc_edu__Level_3__within_bioassay_data_set_function__data.data.txt  | tail -n +%s | cut -d '       ' -f 2,6,10,14,18,22,26,30,34,38,42,46,50,54,58,62,66,70,74,78,82,86,90,94,98,102,106,110,114,118,122,126,130,134,138,142,146,150,154,158,162,166,170,174,178,182,186,190,194,198,202,206,210,214,218,222,226,230,234,238,242,246,250,254,258,262,266,270,274,278,282,286,290,294,298,302,306,310,314,318"
-  N = 485579  # total number of lines
-  h = 2       # total header lines
-  # Read the first header line with sample IDs:
-  f = pipe(cmd, open="r")
-  id = as.vector(read.table(f, sep="\t", stringsAsFactors=FALSE, header=FALSE, nrows=1))
-  close(f)
-  # Read the rest of the file in parallel. I prefer doMC/foreach over mclapply for this because foreach can combine results incrementally.
-  registerDoMC(4)  # four cores on our test machine
-  block = floor((N - h)/cores)
-  acc = foreach(j=1:cores, .combine=rbind) %dopar%
-  {
-    skip = block * (j - 1) + h + 1
-    nrows = ifelse(j == cores, -1, block)
-    f = pipe(sprintf(cmd, skip), open="r")
-    on.exit(close(f))
-    read.table(f, sep="\t", stringsAsFactors=FALSE, header=FALSE, nrows=nrows)
-  }
-  acc = t(acc)
-
-  # remove columns containing missing values, all zero
-  n = ncol(acc)
-  acc = acc[, colMeans(acc) > 0]
-  cat("Removed", n - ncol(acc), "columns of all zeros.\n")
-  n = ncol(acc)
-  acc = acc[, apply(acc,2,function(x) !any(is.na(x)))]
-  cat("Removed", n - ncol(acc), "columns with missing values.\n")
-  cat("Data matrix size ", nrow(acc), "x", ncol(acc), "\n")
-
-  # OK, the example data are parsed and in acc. proceed as in the smaller example.
-  threshold = 0.99
-  # Compute using tcor():
-  m1  = sum(gc()[,2])  # Memory in megabytes currently in use
-  t1  = proc.time()
-  tx  = tcor(acc, t=threshold, p=10)
-  t1  = (proc.time() - t1)[3] # Time in seconds
-  m1  = sum(gc()[,6]) - m1    # Peak excess memory use during the test
-  
-  # The cluster example proceeds similarly, but registers a doRedis backend
-  # instead of the doMC backend before invoking tcor...
-} # end if run examples
-require(xtable)
-ans = data.frame(Method=c("tcor (4 core PC)", "tcor (64 core cluster)", ""), `Wall clock time (s)`=c(t1, t3, t4), `Memory use (MB)`=c(m1, m3, m4), " "=c("","(local)","(remote)"), check.names=FALSE)
-print(
-    xtable(ans,
-        caption = "TCGA ACC Methylation450 (80 rows x 394,014 columns, threshold=0.99). Linux cluster results include master R process memory use (local) plus total peak memory used by all 64 worker R processes (remote).", label = "TCGA3", caption.placement = "top")
-  ,size="small", table.placement="ht", include.rownames=FALSE, NA.string="")
-@
-From a set of almost 160 billion pairs of vectors, Algorithm \ref{prune} finds 913,601
+% latex table generated in R 3.2.3 by xtable 1.8-0 package
+% Sun Dec 20 09:52:31 2015
+\begin{table}[ht]
+\centering
+{\small
+\begin{tabular}{lrrl}
+  \hline
+Method & Wall clock time (s) & Memory use (MB) &   \\ 
+  \hline
+tcor (4 core PC) & 10309.00 & 389.10 &  \\ 
+  tcor (64 core cluster) & 482.00 & 994.30 & (local) \\ 
+   &  & 42282.40 & (remote) \\ 
+   \hline
+\end{tabular}
+}
+\caption{TCGA ACC Methylation450 (80 rows x 394,014 columns, threshold=0.99). Linux cluster results include master R process memory use (local) plus total peak memory used by all 64 worker R processes (remote).} 
+\label{TCGA3}
+\end{table}From a set of almost 160 billion pairs of vectors, Algorithm \ref{prune} finds 913,601
 pairs with correlation values of 0.99 or more on a modest Linux
 cluster in about 8 minutes. The same algorithm works, more slowly, in
 the constrained memory setting of a desktop PC without modification.
