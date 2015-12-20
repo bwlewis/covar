@@ -96,6 +96,25 @@ University of Rhode Island\\
 Kingston, Rhode Island 02881\\
 E-mail: \email{jbaglama@math.uri.edu}\\
 URL: \url{http://www.math.uri.edu/~jbaglama}\\
+\\
+Michael Kane\\
+Yale University\\
+300 Geroge Street\\
+New Haven, Connecticut 06511\\
+E-mail: \email{michael.kane@yale.edu}\\
+\\
+Bryan Lewis\\
+Paradigm4, Inc.\\
+281 Winter Street, Suite 360\\
+Waltham, MA 02451\\
+E-mail: \email{blewis@illposed.net}\\
+URL: \url{http://illposed.net}\\
+\\
+Alex Poliakov\\
+Paradigm4, Inc.\\
+281 Winter Street, Suite 360\\
+Waltham, MA 02451\\
+E-mail: \email{apoliakov@paradigm4.com}\\
 }
 
 
