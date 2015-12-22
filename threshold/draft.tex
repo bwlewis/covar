@@ -376,10 +376,9 @@ $q\in\mathcal{R}^n = [1,2,\ldots,n]^T$.
 the previous step, applying the correlation threshold to this reduced set of values.
 \end{enumerate}
 \end{algorithm}
-Because the singular values $\sigma_j$, $j=1,2,\ldots,n$ are non-increasing and
-decrease in proportion to variability in the data, it's often reasonable to
-judge whether there are ``too many'' candidate pairs (step 5) after only a 1-d
-projection $\tilde{i}=1$ in step 4 of the algorithm.
+One can cheaply estimate whether there are ``too many'' candidate pairs for a
+given dimension $p$ in step 5 by evaluating step 4 for only adjacent pairs of
+vectors, $\tilde{i}=1$.
 
 Algorithm \ref{prune} guarantees that no pruned vector pair exceeds the given
 correlation threshold--the pruning does not produce false negatives.  The
@@ -469,11 +468,12 @@ installed from the development GitHub repository using the
 \end{Sinput}
 \end{Schunk}
 
-The native \proglang{R} {\tt cor()} function is a general function that can compute
-several different types of correlation matrices including Pearson, Spearman,
-and Kendall and includes a number of options for dealing with missing values.
-Because of its flexibility, the native {\tt cor()} function does not always
-compute Pearson correlation matrices in the most computationally-efficient way.
+The native \proglang{R} {\tt cor()} function is a general function that can
+compute several different types of correlation matrices including Pearson,
+Spearman, and Kendall and includes a number of options for dealing with missing
+values.  Because of its flexibility, the native {\tt cor()} function does not
+always compute Pearson correlation matrices in the most
+computationally-efficient way.
 
 Correlation matrix computation can benefit substantially from use of optimized
 BLAS Level 3 operations (matrix multiplication), achieving high utilization of
@@ -500,36 +500,51 @@ The data consist of 80 experiments involving the
 Saccharomyces Cerevisiae yeast measuring gene expression data across 6,221
 Affymetrix probes, represented as an $80\times 6221$ real-valued matrix.  The
 example finds all pairs of columns (gene expression measurements) that meet or exceed a
-Pearson correlation value of 0.95.  We use a projected dimension $p=10$
-in {\tt tcor()}.
+Pearson correlation value of 0.95. The choice of projection dimension $p$ affects
+the efficiency of the algorithm. For $p=2$ the number of candidate vector pairs
+generated in step 4 of Algorithm \ref{prune} is over 3 million. When $p$ is increased
+to $10$, the number of candidate vector pairs drops to less than 13,000.
+The reference \proglang{R} implementation includes options for
+tuning $p$ and relies on the restart ability of the IRLBA to pick up where it left off and
+inexpensively extend an existing truncated SVD. The following example uses $p=10$.
 \begin{small}
 \begin{Schunk}
 \begin{Sinput}
-> library(tcor)
-> library(doMC)     # local parallel computation
-> library(biclust)  # for the BicatYeast data
-> data(EisenYeast)  # in gene by sample orientation
-> A = t(EisenYeast) # to correlate genes to genes
 > threshold = 0.95
-> # Register a four-core multicore parallel backend
-> registerDoMC(4)
-> # Compute using tcor():
-> m1  = sum(gc()[,2])  # Memory in megabytes currently in use
-> t1  = proc.time()
-> tx  = tcor(A, t=threshold, p=10)
-> t1  = (proc.time() - t1)[3] # Time in seconds
-> m1  = sum(gc()[,6]) - m1    # Peak excess memory use during the test
-> # Fast brute force full correlation:
-> m2  = sum(gc()[,2])
-> t2  = proc.time()
-> mu = colMeans(A)
-> s  = sqrt(apply(A, 2, crossprod) - nrow(A) * mu ^ 2)
-> cs = scale(A, center=mu, scale=s)  # scale and center the data
-> cx = crossprod(cs)                 # full correlation matrix
-> cx  = cx * upper.tri(cx)    # ignore symmetry and diagonal
-> pairs = which(cx >= threshold, arr.ind=TRUE)
-> t2  = (proc.time() - t2)[3]
-> m2  = sum(gc()[,6]) - m2
+> # Test system values:
+> t1=3.13
+> t2=1.75
+> m1=59.60
+> m2=1075.10
+> if(Sys.getenv("RUN_EXAMPLES")=="TRUE")
++ {
++ library(tcor)
++ library(doMC)     # local parallel computation
++ library(biclust)  # for the BicatYeast data
++ data(EisenYeast)  # in gene by sample orientation
++ A = t(EisenYeast) # to correlate genes to genes
++ # Register a four-core multicore parallel backend
++ registerDoMC(4)
++ 
++ # Compute using tcor():
++ m1  = sum(gc()[,2])  # Memory in megabytes currently in use
++ t1  = proc.time()
++ tx  = tcor(A, t=threshold, p=10)
++ t1  = (proc.time() - t1)[3] # Time in seconds
++ m1  = sum(gc()[,6]) - m1    # Peak excess memory use during the test
++ 
++ # Fast brute force full correlation:
++ m2  = sum(gc()[,2])
++ t2  = proc.time()
++ mu = colMeans(A)
++ s  = sqrt(apply(A, 2, crossprod) - nrow(A) * mu ^ 2)
++ cs = scale(A, center=mu, scale=s)  # scale and center the data
++ cx = crossprod(cs)                 # full correlation matrix
++ cx  = cx * upper.tri(cx)    # ignore symmetry and diagonal
++ pairs = which(cx >= threshold, arr.ind=TRUE)
++ t2  = (proc.time() - t2)[3]
++ m2  = sum(gc()[,6]) - m2
++ }
 \end{Sinput}
 \end{Schunk}
 \end{small}
@@ -540,7 +555,7 @@ threshold of 0.95, with comparative timing and memory use shown in the
 following table.
 
 % latex table generated in R 3.2.3 by xtable 1.8-0 package
-% Sun Dec 20 09:52:31 2015
+% Mon Dec 21 19:50:10 2015
 \begin{table}[ht]
 \centering
 {\small
@@ -548,8 +563,8 @@ following table.
   \hline
 Method & Wall clock time (s) & Peak excess memory use (MB) \\ 
   \hline
-tcor & 3.19 & 59.60 \\ 
-  brute force & 1.74 & 1075.10 \\ 
+tcor & 3.13 & 59.60 \\ 
+  brute force & 1.75 & 1075.10 \\ 
    \hline
 \end{tabular}
 }
@@ -612,7 +627,7 @@ adaptations of the algorithm are possible and could, for example, share the
 memory required by $A$ between worker \proglang{R} processes on each computer.
 
 % latex table generated in R 3.2.3 by xtable 1.8-0 package
-% Sun Dec 20 09:52:31 2015
+% Mon Dec 21 19:50:10 2015
 \begin{table}[ht]
 \centering
 {\small
