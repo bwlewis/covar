@@ -345,8 +345,8 @@ Following this process, we can produce a well-pruned candidate set of vector
 pairs that contains all pairs that meet a given correlation threshold using
 $\ell$ matrix vector products with matrices of order $n \times p$, where $p$ is
 chosen in practice such that $p<<k$. Setting $p=10$ for the example shown in
-Figure \ref{fig1} prunes all but $12,924$ possible vector pairs out of a total
-$6221(6221 - 1) = 193,47,310$ with $\ell=1,715$.
+Figure \ref{fig1} with $t=0.99$ prunes all but $149$ possible vector pairs out of a total
+$6221(6221 - 1) = 193,47,310$ with $\ell=787$.
 
 These steps are formalized in Algorithm \ref{prune} below. The algorithm
 proceeds in two main parts: steps 1--6 prune pairs of vectors down to a small

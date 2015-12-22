@@ -334,8 +334,8 @@ Following this process, we can produce a well-pruned candidate set of vector
 pairs that contains all pairs that meet a given correlation threshold using
 $\ell$ matrix vector products with matrices of order $n \times p$, where $p$ is
 chosen in practice such that $p<<k$. Setting $p=10$ for the example shown in
-Figure \ref{fig1} prunes all but $12,924$ possible vector pairs out of a total
-$6221(6221 - 1) = 193,47,310$ with $\ell=1,715$.
+Figure \ref{fig1} with $t=0.99$ prunes all but $149$ possible vector pairs out of a total
+$6221(6221 - 1) = 193,47,310$ with $\ell=787$.
 
 These steps are formalized in Algorithm \ref{prune} below. The algorithm
 proceeds in two main parts: steps 1--6 prune pairs of vectors down to a small
@@ -554,8 +554,8 @@ same set of 125 gene expression pairs that exceed the specified correlation
 threshold of 0.95, with comparative timing and memory use shown in the
 following table.
 
-% latex table generated in R 3.2.3 by xtable 1.8-0 package
-% Tue Dec 22 09:08:06 2015
+% latex table generated in R 3.2.2 by xtable 1.7-4 package
+% Tue Dec 22 14:32:06 2015
 \begin{table}[ht]
 \centering
 {\small
@@ -626,8 +626,8 @@ remote \proglang{R} process requires access to a copy of the data matrix $A$. Mo
 adaptations of the algorithm are possible and could, for example, share the
 memory required by $A$ between worker \proglang{R} processes on each computer.
 
-% latex table generated in R 3.2.3 by xtable 1.8-0 package
-% Tue Dec 22 09:08:06 2015
+% latex table generated in R 3.2.2 by xtable 1.7-4 package
+% Tue Dec 22 14:32:06 2015
 \begin{table}[ht]
 \centering
 {\small
