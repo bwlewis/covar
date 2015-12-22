@@ -555,7 +555,7 @@ threshold of 0.95, with comparative timing and memory use shown in the
 following table.
 
 % latex table generated in R 3.2.3 by xtable 1.8-0 package
-% Mon Dec 21 19:50:10 2015
+% Tue Dec 22 09:08:06 2015
 \begin{table}[ht]
 \centering
 {\small
@@ -627,7 +627,7 @@ adaptations of the algorithm are possible and could, for example, share the
 memory required by $A$ between worker \proglang{R} processes on each computer.
 
 % latex table generated in R 3.2.3 by xtable 1.8-0 package
-% Mon Dec 21 19:50:10 2015
+% Tue Dec 22 09:08:06 2015
 \begin{table}[ht]
 \centering
 {\small
@@ -653,14 +653,15 @@ the constrained memory setting of a desktop PC without modification.
 \section{Extensions}\label{extensions}
 
 The idea of evaluating threshold conditions by projection into low dimensional
-subspaces applies to distance metrics similarly to correlation. Lemma
-\ref{sumlemma} decomposes Euclidean distance between two vectors in terms of
-singular basis vectors and Algorithm \ref{prune} can be applied directly to the
-problem of finding all pairs of vectors that meet a thresholded Euclidean
-distance with small changes in steps 3, 4, and 7.  By equivalence of norms,
-thresholded Euclidean distance can be extended to other distance metrics. The
-reference \proglang{R} implementation \citep{sup} includes functions for thresholded
-distance and correlation.
+subspaces applies to distance metrics similarly to correlation, see
+\citep{svd-similarity} for a related approach. Lemma \ref{sumlemma} decomposes
+Euclidean distance between two vectors in terms of singular basis vectors and
+Algorithm \ref{prune} can be applied directly to the problem of finding all
+pairs of vectors that meet a thresholded Euclidean distance with small changes
+in steps 3, 4, and 7.  By equivalence of norms, thresholded Euclidean distance
+can be extended to other distance metrics. The reference \proglang{R}
+implementation \citep{sup} includes functions for thresholded distance and
+correlation.
 
 The ideas presented here can be adapted to efficiently find the top N most
 correlated vector pairs for a given constant N similarly to the work of
@@ -668,15 +669,13 @@ Xiong et al. \citep{prune2}.
 
 \section{Conclusion}\label{conclusion}
 
-We present a simple algorithm and reference \proglang{R} implementation based on a
-truncated singular value decomposition (SVD) that efficiently computes
-thresholded subsets of large correlation and distance matrices.  We show that
-the natural connection between data covariance and the SVD can result in
-substantial computational and memory savings, and illustrate these savings with
-a few genomics data experiments.  Moreover, the main computational work in the
-algorithm is easily parallelized and deployed across computational
-clusters.
-
+We present a simple algorithm and reference \proglang{R} implementation based
+on a truncated singular value decomposition (SVD) that efficiently computes
+thresholded subsets of large correlation  matrices.  We show that the natural
+connection between data covariance and the SVD can result in substantial
+computational and memory savings, and illustrate these savings with a few
+genomics data experiments.  The main computational work in the algorithm is
+easily parallelized and deployed across computational clusters.
 
 
 \bibliography{bibliography}{}
