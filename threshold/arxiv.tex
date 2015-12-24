@@ -328,8 +328,8 @@ Following this process, we can produce a well-pruned candidate set of vector
 pairs that contains all pairs that meet a given correlation threshold using
 $\ell$ matrix vector products with matrices of order $n \times p$, where $p$ is
 chosen in practice such that $p<<k$. Setting $p=10$ for the example shown in
-Figure \ref{fig1} prunes all but $12,924$ possible vector pairs out of a total
-$6221(6221 - 1) = 193,47,310$ with $\ell=1,715$.
+Figure \ref{fig1} prunes all but $149$ possible vector pairs out of a total
+$6221(6221 - 1)/2 = 19,347,310$ with $\ell=787$.
 
 These steps are formalized in Algorithm \ref{prune} below. The algorithm
 proceeds in two main parts: steps 1--6 prune pairs of vectors down to a small
@@ -588,12 +588,12 @@ size, the problem is too large to compute using a na\"ive brute force
 correlation method.  (We remark that the matrix multiplication central to the
 brute force implementation can be decomposed into a sequence of smaller steps
 to fit within given memory constraints. However, the brute force algorithm
-would still need to evaluate all of the nearly 160 billion possible vector pair
+would still need to evaluate all possible vector pair
 correlation values.)
 
 Algorithm \ref{prune} identified 913,601 pairs of vectors with correlation
 values of 0.99 or more in about three hours on our test PC. A brute force
-algorithm would need to evaluate the threshold condition for more than 155
+algorithm would need to evaluate the threshold condition for more than 77
 billion vector pairs; the projection of Algorithm \ref{prune} limited the
 search space to only about 4 million candidate pairs, from which the 913,601
 correlated pairs were found.
@@ -637,7 +637,7 @@ tcor (4 core PC) & 10309.00 & 389.10 &  \\
 }
 \caption{TCGA ACC Methylation450 (80 rows x 394,014 columns, threshold=0.99). Linux cluster results include master R process memory use (local) plus total peak memory used by all 64 worker R processes (remote).} 
 \label{TCGA3}
-\end{table}From a set of almost 160 billion pairs of vectors, Algorithm \ref{prune} finds 913,601
+\end{table}From a set of almost 80billion pairs of vectors, Algorithm \ref{prune} finds 913,601
 pairs with correlation values of 0.99 or more on a modest Linux
 cluster in about 8 minutes. The same algorithm works, more slowly, in
 the constrained memory setting of a desktop PC without modification.
