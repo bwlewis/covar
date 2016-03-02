@@ -1,13 +1,35 @@
+%% Instructions for processing this document into a PDF document
+%%
+%% FIRST NOTE, you need the 'xtable' and 'biclust' packages installed in R.
+%% Some of the examples will come from data sets in this package.
+%% You can install it from the R console with, for example:
+%%
+%% install.packages("biclust",repos="http://cran.case.edu")
+%% install.packages("xtable",repos="http://cran.case.edu")
+%%
+%% Now you can prepare the PDF of the paper with any of:
+%%
+%% From a shell:
+%% R CMD Sweave --pdf draft.Rnw
+%%
+%% From an R prompt:
+%% Sweave("draft.Rnw")
+%% tools::texi2pdf("draft.tex")
+%%
+%% From RStudio:
+%% click on the little "Compile PDF" button
+%%
+%% Note that you should probably run the above a few times because
+%% LaTeX generally takes a few runs to get reference numbers right.
+
 \documentclass{article}
 
 \usepackage{Sweave}
-\usepackage{cite}
-\usepackage{authblk}
-
 \usepackage{amsmath}
 \usepackage{hyperref}
+\usepackage{cite}
+\usepackage{authblk}
 \usepackage{graphicx}
-
 \let\proglang=\textsf
 
 \newtheorem{theorem}{Theorem}[section]
@@ -32,28 +54,23 @@
 \numberwithin{algorithmctr}{section}
 
 
-\newcommand{\qed}{\nobreak \ifvmode \relax \else
-      \ifdim\lastskip<1.5em \hskip-\lastskip
-      \hskip1.5em plus0em minus0.5em \fi \nobreak
-      \vrule height0.75em width0.5em depth0.25em\fi}
-
 \title{Efficient Thresholded Correlation using Truncated Singular Value Decomposition}
-%%\author{
-%%James Baglama\\
-%%University of Rhode Island
-%%\And
-%%Michael Kane\\
-%%Yale University
-%%\AND
-%%Bryan Lewis\\
-%%Paradigm4, Inc.\\
-%%\And
-%%Alex Poliakov\\
-%%Paradigm4, Inc.
-%%}
-%%\Plainauthor{James Baglama, Michael Kane, Bryan Lewis, Alex Poliakov}
-%%\Plaintitle{Efficient Thresholded Correlation using Truncated Singular Value Decomposition}
-%%\Shorttitle{Efficient Thresholded Correlation}
+%\author{
+%James Baglama\\
+%University of Rhode Island
+%\And
+%Michael Kane\\
+%Yale University
+%\AND
+%Bryan Lewis\\
+%Paradigm4, Inc.\\
+%\And
+%Alex Poliakov\\
+%Paradigm4, Inc.
+%}
+%\Plainauthor{James Baglama, Michael Kane, Bryan Lewis, Alex Poliakov}
+%\Plaintitle{Efficient Thresholded Correlation using Truncated Singular Value Decomposition}
+%\Shorttitle{Efficient Thresholded Correlation}
 \author[1]{James Baglama \thanks{jbaglama@math.uri.edu}}
 \author[2]{Michael Kane \thanks{michael.kane@yale.edu}}
 \author[3]{Bryan Lewis \thanks{blewis@illposed.net}}
@@ -68,6 +85,7 @@ Yale University
 Paradigm4, Inc.
 }
 \renewcommand\Authands{ and }
+
 %\Abstract{
 \begin{document}
 \maketitle
@@ -82,36 +100,35 @@ correlation matrix. We present a method based on the singular value
 decomposition (SVD) and its relationship to the data covariance structure that
 can efficiently compute thresholded subsets of very large correlation matrices.
 \end{abstract}
-%%\Keywords{thresholded correlation, SVD, \proglang{R}}
-%%\Plainkeywords{thresholded correlation, SVD, R}
-%%\Address{
-%%James Baglama,
-%%Chair of Mathematics\\
-%%Department of Mathematics\\
-%%University of Rhode Island\\
-%%Kingston, Rhode Island 02881\\
-%%E-mail: \email{jbaglama@math.uri.edu}\\
-%%URL: \url{http://www.math.uri.edu/~jbaglama}\\
-%%\\
-%%Michael Kane\\
-%%Yale University\\
-%%300 Geroge Street\\
-%%New Haven, Connecticut 06511\\
-%%E-mail: \email{michael.kane@yale.edu}\\
-%%\\
-%%Bryan Lewis\\
-%%Paradigm4, Inc.\\
-%%281 Winter Street, Suite 360\\
-%%Waltham, MA 02451\\
-%%E-mail: \email{blewis@illposed.net}\\
-%%URL: \url{http://illposed.net}\\
-%%\\
-%%Alex Poliakov\\
-%%Paradigm4, Inc.\\
-%%281 Winter Street, Suite 360\\
-%%Waltham, MA 02451\\
-%%E-mail: \email{apoliakov@paradigm4.com}\\
-%%}
+%\Keywords{thresholded correlation, SVD, \proglang{R}}
+%\Plainkeywords{thresholded correlation, SVD, R}
+%\Address{
+%James Baglama, Chair of Mathematics\\
+%Department of Mathematics\\
+%University of Rhode Island\\
+%Kingston, Rhode Island 02881\\
+%E-mail: \email{jbaglama@math.uri.edu}\\
+%URL: \url{http://www.math.uri.edu/~jbaglama}\\
+%\\
+%Michael Kane\\
+%Yale University\\
+%300 Geroge Street\\
+%New Haven, Connecticut 06511\\
+%E-mail: \email{michael.kane@yale.edu}\\
+%\\
+%Bryan Lewis\\
+%Paradigm4, Inc.\\
+%281 Winter Street, Suite 360\\
+%Waltham, MA 02451\\
+%E-mail: \email{blewis@illposed.net}\\
+%URL: \url{http://illposed.net}\\
+%\\
+%Alex Poliakov\\
+%Paradigm4, Inc.\\
+%281 Winter Street, Suite 360\\
+%Waltham, MA 02451\\
+%E-mail: \email{apoliakov@paradigm4.com}\\
+%}
 
 
 \section{Introduction}\label{intro}
@@ -128,22 +145,24 @@ The number of correlation coefficients grows quadratically with the number of
 vectors. Simply computing all pairs of correlation coefficients and then
 filtering out coefficients below a given threshold may not be computationally
 feasible for high-dimensional data in modern genomics and other applications.
-Considerable attention has been devoted to \emph{pruning
-methods} that cheaply prune away all but the most highly-correlated pairs of
-vectors.  For example the TAPER and related algorithms of Xiong et al. develop
-pruning rules based on the frequency of mutually co-occurring observations (rows)
-among vector pairs; see \cite{prune1, prune2} and the references therein.
-Related methods approximate a set containing the most highly-correlated
-pairs using hashing algorithms \cite{prune3}. A number of other methods arrive
-at approximate sets of the most highly-correlated pairs using
-dimensionality-reduction techniques like the discrete Fourier
-transform \cite{timeseries}. The method of Wu, et al. \cite{svd-similarity},
-conceptually very similar to our approach, uses the singular value
-decomposition (SVD) to find all pairs of close vectors with respect to a
-distance metric (instead of correlation).  Our method finds all of the most
-highly-correlated vector pairs with respect to a given threshold by pruning
-along an intuitive path of decreasing variance defined by the data and computed
-by a truncated SVD.
+Considerable attention has been devoted to \emph{pruning methods} that cheaply
+prune away all but the most highly-correlated pairs of vectors.  For example
+the TAPER and related algorithms of Xiong et al. develop pruning rules based on
+the frequency of mutually co-occurring observations (rows) among vector pairs;
+see \cite{prune1, prune2} and the references therein.  Related methods
+approximate a set containing the most highly-correlated pairs using hashing
+algorithms \cite{prune3}. A number of other methods arrive at approximate sets
+of the most highly-correlated pairs using dimensionality-reduction techniques
+like the discrete Fourier transform \cite{timeseries}. The method of Wu, et al.
+\cite{svd-similarity}, conceptually very similar to our approach, uses the
+singular value decomposition (SVD) to find all pairs of close vectors with
+respect to a distance metric (instead of correlation). Hero and
+Rajaratnam\cite{hero2011large} apply projections to the thresholded correlation
+problem with the additional objective of determining a reasonable threshold
+value; their method follows a probabilistic approach.  Our method finds all of
+the most highly-correlated vector pairs with respect to a given threshold by
+pruning along an intuitive path of decreasing variance defined by the data and
+computed by a truncated SVD.
 
 Consider a real-valued data matrix $A$ consisting of $m$ observations of $n$
 column vectors.  Denote the columns of $A$ as $a_j\in\mathcal{R}^m$ for
@@ -328,7 +347,7 @@ Following this process, we can produce a well-pruned candidate set of vector
 pairs that contains all pairs that meet a given correlation threshold using
 $\ell$ matrix vector products with matrices of order $n \times p$, where $p$ is
 chosen in practice such that $p<<k$. Setting $p=10$ for the example shown in
-Figure \ref{fig1} prunes all but $149$ possible vector pairs out of a total
+Figure \ref{fig1} with $t=0.99$ prunes all but $149$ possible vector pairs out of a total
 $6221(6221 - 1)/2 = 19,347,310$ with $\ell=787$.
 
 These steps are formalized in Algorithm \ref{prune} below. The algorithm
@@ -548,11 +567,11 @@ same set of 125 gene expression pairs that exceed the specified correlation
 threshold of 0.95, with comparative timing and memory use shown in the
 following table.
 
-% latex table generated in R 3.2.3 by xtable 1.8-0 package
-% Tue Dec 22 09:08:06 2015
+% latex table generated in R 3.2.2 by xtable 1.8-2 package
+% Wed Mar  2 13:07:43 2016
 \begin{table}[ht]
 \centering
-{\small
+\begingroup\small
 \begin{tabular}{lrr}
   \hline
 Method & Wall clock time (s) & Peak excess memory use (MB) \\ 
@@ -561,7 +580,7 @@ tcor & 3.13 & 59.60 \\
   brute force & 1.75 & 1075.10 \\ 
    \hline
 \end{tabular}
-}
+\endgroup
 \caption{Gene expression results, threshold=0.95} 
 \label{EisenYeast}
 \end{table}
@@ -620,11 +639,11 @@ remote \proglang{R} process requires access to a copy of the data matrix $A$. Mo
 adaptations of the algorithm are possible and could, for example, share the
 memory required by $A$ between worker \proglang{R} processes on each computer.
 
-% latex table generated in R 3.2.3 by xtable 1.8-0 package
-% Tue Dec 22 09:08:06 2015
+% latex table generated in R 3.2.2 by xtable 1.8-2 package
+% Wed Mar  2 13:07:43 2016
 \begin{table}[ht]
 \centering
-{\small
+\begingroup\small
 \begin{tabular}{lrrl}
   \hline
 Method & Wall clock time (s) & Memory use (MB) &   \\ 
@@ -634,10 +653,10 @@ tcor (4 core PC) & 10309.00 & 389.10 &  \\
    &  & 42282.40 & (remote) \\ 
    \hline
 \end{tabular}
-}
+\endgroup
 \caption{TCGA ACC Methylation450 (80 rows x 394,014 columns, threshold=0.99). Linux cluster results include master R process memory use (local) plus total peak memory used by all 64 worker R processes (remote).} 
 \label{TCGA3}
-\end{table}From a set of almost 80billion pairs of vectors, Algorithm \ref{prune} finds 913,601
+\end{table}From a set of almost 80 billion pairs of vectors, Algorithm \ref{prune} finds 913,601
 pairs with correlation values of 0.99 or more on a modest Linux
 cluster in about 8 minutes. The same algorithm works, more slowly, in
 the constrained memory setting of a desktop PC without modification.
@@ -674,5 +693,6 @@ easily parallelized and deployed across computational clusters.
 
 \bibliography{bibliography}{}
 \bibliographystyle{plain}
+
 
 \end{document}

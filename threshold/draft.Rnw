@@ -1,6 +1,6 @@
 %% Instructions for processing this document into a PDF document
 %%
-%% FIRST NOTE, you need the 'xtable' and 'biclust' packages installedi in R.
+%% FIRST NOTE, you need the 'xtable' and 'biclust' packages installed in R.
 %% Some of the examples will come from data sets in this package.
 %% You can install it from the R console with, for example:
 %%
@@ -145,22 +145,24 @@ The number of correlation coefficients grows quadratically with the number of
 vectors. Simply computing all pairs of correlation coefficients and then
 filtering out coefficients below a given threshold may not be computationally
 feasible for high-dimensional data in modern genomics and other applications.
-Considerable attention has been devoted to \emph{pruning
-methods} that cheaply prune away all but the most highly-correlated pairs of
-vectors.  For example the TAPER and related algorithms of Xiong et al. develop
-pruning rules based on the frequency of mutually co-occurring observations (rows)
-among vector pairs; see \cite{prune1, prune2} and the references therein.
-Related methods approximate a set containing the most highly-correlated
-pairs using hashing algorithms \cite{prune3}. A number of other methods arrive
-at approximate sets of the most highly-correlated pairs using
-dimensionality-reduction techniques like the discrete Fourier
-transform \cite{timeseries}. The method of Wu, et al. \cite{svd-similarity},
-conceptually very similar to our approach, uses the singular value
-decomposition (SVD) to find all pairs of close vectors with respect to a
-distance metric (instead of correlation).  Our method finds all of the most
-highly-correlated vector pairs with respect to a given threshold by pruning
-along an intuitive path of decreasing variance defined by the data and computed
-by a truncated SVD.
+Considerable attention has been devoted to \emph{pruning methods} that cheaply
+prune away all but the most highly-correlated pairs of vectors.  For example
+the TAPER and related algorithms of Xiong et al. develop pruning rules based on
+the frequency of mutually co-occurring observations (rows) among vector pairs;
+see \cite{prune1, prune2} and the references therein.  Related methods
+approximate a set containing the most highly-correlated pairs using hashing
+algorithms \cite{prune3}. A number of other methods arrive at approximate sets
+of the most highly-correlated pairs using dimensionality-reduction techniques
+like the discrete Fourier transform \cite{timeseries}. The method of Wu, et al.
+\cite{svd-similarity}, conceptually very similar to our approach, uses the
+singular value decomposition (SVD) to find all pairs of close vectors with
+respect to a distance metric (instead of correlation). Hero and
+Rajaratnam\cite{hero2011large} apply projections to the thresholded correlation
+problem with the additional objective of determining a reasonable threshold
+value; their method follows a probabilistic approach.  Our method finds all of
+the most highly-correlated vector pairs with respect to a given threshold by
+pruning along an intuitive path of decreasing variance defined by the data and
+computed by a truncated SVD.
 
 Consider a real-valued data matrix $A$ consisting of $m$ observations of $n$
 column vectors.  Denote the columns of $A$ as $a_j\in\mathcal{R}^m$ for
@@ -735,6 +737,7 @@ easily parallelized and deployed across computational clusters.
 
 
 \bibliography{bibliography}{}
+\bibliographystyle{plain}
 
 
 \end{document}
