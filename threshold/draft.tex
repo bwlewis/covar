@@ -22,12 +22,15 @@
 %% Note that you should probably run the above a few times because
 %% LaTeX generally takes a few runs to get reference numbers right.
 
-\documentclass[article]{jss}
-%% need no \usepackage{Sweave.sty}
+\documentclass{article}
 
+\usepackage{Sweave}
 \usepackage{amsmath}
 \usepackage{hyperref}
-
+\usepackage{cite}
+\usepackage{authblk}
+\usepackage{graphicx}
+\let\proglang=\textsf
 
 \newtheorem{theorem}{Theorem}[section]
 \newtheorem{lemma}[theorem]{Lemma}
@@ -51,32 +54,42 @@
 \numberwithin{algorithmctr}{section}
 
 
-\newcommand{\qed}{\nobreak \ifvmode \relax \else
-      \ifdim\lastskip<1.5em \hskip-\lastskip
-      \hskip1.5em plus0em minus0.5em \fi \nobreak
-      \vrule height0.75em width0.5em depth0.25em\fi}
-
-
-
 \title{Efficient Thresholded Correlation using Truncated Singular Value Decomposition}
-\author{
-James Baglama\\
+%\author{
+%James Baglama\\
+%University of Rhode Island
+%\And
+%Michael Kane\\
+%Yale University
+%\AND
+%Bryan Lewis\\
+%Paradigm4, Inc.\\
+%\And
+%Alex Poliakov\\
+%Paradigm4, Inc.
+%}
+%\Plainauthor{James Baglama, Michael Kane, Bryan Lewis, Alex Poliakov}
+%\Plaintitle{Efficient Thresholded Correlation using Truncated Singular Value Decomposition}
+%\Shorttitle{Efficient Thresholded Correlation}
+\author[1]{James Baglama \thanks{jbaglama@math.uri.edu}}
+\author[2]{Michael Kane \thanks{michael.kane@yale.edu}}
+\author[3]{Bryan Lewis \thanks{blewis@illposed.net}}
+\author[3]{Alex Poliakov \thanks{apoliakov@paradigm4.com}}
+\affil[1]{
 University of Rhode Island
-\And
-Michael Kane\\
+}
+\affil[2]{
 Yale University
-\AND
-Bryan Lewis\\
-Paradigm4, Inc.\\
-\And
-Alex Poliakov\\
+}
+\affil[3]{
 Paradigm4, Inc.
 }
-\Plainauthor{James Baglama, Michael Kane, Bryan Lewis, Alex Poliakov}
-\Plaintitle{Efficient Thresholded Correlation using Truncated Singular Value Decomposition}
-\Shorttitle{Efficient Thresholded Correlation}
+\renewcommand\Authands{ and }
 
-\Abstract{
+%\Abstract{
+\begin{document}
+\maketitle
+\begin{abstract}
 Efficiently computing a subset of a correlation matrix consisting of values
 above a specified threshold is important to many practical applications.
 Real-world problems in genomics, machine learning, finance other applications
@@ -86,49 +99,47 @@ interest, and those values typically make up a small fraction of the overall
 correlation matrix. We present a method based on the singular value
 decomposition (SVD) and its relationship to the data covariance structure that
 can efficiently compute thresholded subsets of very large correlation matrices.
-}
-\Keywords{thresholded correlation, SVD, \proglang{R}}
-\Plainkeywords{thresholded correlation, SVD, R}
-\Address{
-James Baglama, Chair of Mathematics\\
-Department of Mathematics\\
-University of Rhode Island\\
-Kingston, Rhode Island 02881\\
-E-mail: \email{jbaglama@math.uri.edu}\\
-URL: \url{http://www.math.uri.edu/~jbaglama}\\
-\\
-Michael Kane\\
-Yale University\\
-300 Geroge Street\\
-New Haven, Connecticut 06511\\
-E-mail: \email{michael.kane@yale.edu}\\
-\\
-Bryan Lewis\\
-Paradigm4, Inc.\\
-281 Winter Street, Suite 360\\
-Waltham, MA 02451\\
-E-mail: \email{blewis@illposed.net}\\
-URL: \url{http://illposed.net}\\
-\\
-Alex Poliakov\\
-Paradigm4, Inc.\\
-281 Winter Street, Suite 360\\
-Waltham, MA 02451\\
-E-mail: \email{apoliakov@paradigm4.com}\\
-}
+\end{abstract}
+%\Keywords{thresholded correlation, SVD, \proglang{R}}
+%\Plainkeywords{thresholded correlation, SVD, R}
+%\Address{
+%James Baglama, Chair of Mathematics\\
+%Department of Mathematics\\
+%University of Rhode Island\\
+%Kingston, Rhode Island 02881\\
+%E-mail: \email{jbaglama@math.uri.edu}\\
+%URL: \url{http://www.math.uri.edu/~jbaglama}\\
+%\\
+%Michael Kane\\
+%Yale University\\
+%300 Geroge Street\\
+%New Haven, Connecticut 06511\\
+%E-mail: \email{michael.kane@yale.edu}\\
+%\\
+%Bryan Lewis\\
+%Paradigm4, Inc.\\
+%281 Winter Street, Suite 360\\
+%Waltham, MA 02451\\
+%E-mail: \email{blewis@illposed.net}\\
+%URL: \url{http://illposed.net}\\
+%\\
+%Alex Poliakov\\
+%Paradigm4, Inc.\\
+%281 Winter Street, Suite 360\\
+%Waltham, MA 02451\\
+%E-mail: \email{apoliakov@paradigm4.com}\\
+%}
 
-
-\begin{document}
 
 \section{Introduction}\label{intro}
 
 Finding highly-correlated pairs among a large set of vectors is an important
 part of many applications. For instance, subsets of highly-correlated vectors
 of gene expression values may be used in the discovery of networks of genes
-relevant to particular biological processes \citep{genomics}.  Identification of
+relevant to particular biological processes \cite{genomics}.  Identification of
 highly-correlated pairs may be used in feature selection algorithms for machine
-learning applications \citep{ml1, ml2} and are important to time series and
-image processing applications \citep{timeseries, svd-similarity}.
+learning applications \cite{ml1, ml2} and are important to time series and
+image processing applications \cite{timeseries, svd-similarity}.
 
 The number of correlation coefficients grows quadratically with the number of
 vectors. Simply computing all pairs of correlation coefficients and then
@@ -138,12 +149,12 @@ Considerable attention has been devoted to \emph{pruning
 methods} that cheaply prune away all but the most highly-correlated pairs of
 vectors.  For example the TAPER and related algorithms of Xiong et al. develop
 pruning rules based on the frequency of mutually co-occurring observations (rows)
-among vector pairs; see \citep{prune1, prune2} and the references therein.
+among vector pairs; see \cite{prune1, prune2} and the references therein.
 Related methods approximate a set containing the most highly-correlated
-pairs using hashing algorithms \citep{prune3}. A number of other methods arrive
+pairs using hashing algorithms \cite{prune3}. A number of other methods arrive
 at approximate sets of the most highly-correlated pairs using
 dimensionality-reduction techniques like the discrete Fourier
-transform \citep{timeseries}. The method of Wu, et al. \citep{svd-similarity},
+transform \cite{timeseries}. The method of Wu, et al. \cite{svd-similarity},
 conceptually very similar to our approach, uses the singular value
 decomposition (SVD) to find all pairs of close vectors with respect to a
 distance metric (instead of correlation).  Our method finds all of the most
@@ -392,7 +403,7 @@ filter the thresholded values in step 7 (decreasing work as $p$ increases).
 Most of the floating point operations occur in step 4 of Algorithm \ref{prune}.
 Fortunately the $\ell$ evaluations in step 4 are independent of each other and
 can easily be computed in parallel. See the reference \proglang{R}
-implementation \citep{sup} for an example.
+implementation \cite{sup} for an example.
 
 
 \section{General matrices and fast truncated SVD}\label{irlba}
@@ -407,10 +418,10 @@ as required in step 5 of Algorithm \ref{prune}. Fortunately all desires are met
 by one algorithm.
 
 The augmented implicitly restarted Lanczos bidiagonalization algorithm\break(IRLBA)
-of Baglama and Reichel \citep{irlba} efficiently computes truncated singular value
+of Baglama and Reichel \cite{irlba} efficiently computes truncated singular value
 decompositions of large dense or sparse matrices. Reference implementations are
-available for \proglang{R} \citep{irlbar}, \proglang{Matlab} \citep{irlbam},
-and \proglang{Python} \citep{irlbap}.
+available for \proglang{R} \cite{irlbar}, \proglang{Matlab} \cite{irlbam},
+and \proglang{Python} \cite{irlbap}.
 
 We can relax the column mean and scale assumptions without introducing much
 additional computational or storage overhead as follows. Assume $A$ is an
@@ -430,7 +441,7 @@ problems replaces matrix-vector products of the form $Ax$ with $AWx - ez^TWx$ in
 the iterations, implicitly working with a scaled and centered matrix without
 forming it.  This comes at the cost of storing two additional length $n$ vectors and
 at most computing two additional vector inner products per matrix-vector product.
-The \proglang{R} implementation \citep{irlbar} of IRLBA includes arguments for centering and
+The \proglang{R} implementation \cite{irlbar} of IRLBA includes arguments for centering and
 scaling the input matrix.
 
 A na\"ive brute force thresholded correlation computation requires $O(n^2 m)$ flops.
@@ -449,8 +460,8 @@ alter their threshold in some cases.
 \section{Numerical experiments}\label{examples}
 
 We evaluated the algorithm using public gene expression and DNA methylation
-datasets from the \proglang{R} {\tt biclust} \citep{biclust} package and from
-the Cancer Genome Atlas \citep{gdac}, referred to as TCGA.  Most tests were
+datasets from the \proglang{R} {\tt biclust} \cite{biclust} package and from
+the Cancer Genome Atlas \cite{gdac}, referred to as TCGA.  Most tests were
 performed on a desktop PC with a single AMD A10-7850K 3.7$\,$GHz Athlon
 quad-core CPU and 16$\,$GB 1333$\,$MHz unbuffered RAM running the Ubuntu 15.10
 GNU/Linux OS. Tests were performed with 64-bit \proglang{R} version 3.2.3 using
@@ -495,7 +506,7 @@ memory required to store the input data matrix is reported in megabytes.
 
 Anyone can quickly run the example to experiment with the algorithm and
 compare its output with brute force results. The example uses the {\tt
-EisenYeast} data from the {\tt biclust} \proglang{R} package \citep{biclust}.
+EisenYeast} data from the {\tt biclust} \proglang{R} package \cite{biclust}.
 The data consist of 80 experiments involving the
 Saccharomyces Cerevisiae yeast measuring gene expression data across 6,221
 Affymetrix probes, represented as an $80\times 6221$ real-valued matrix.  The
@@ -554,11 +565,11 @@ same set of 125 gene expression pairs that exceed the specified correlation
 threshold of 0.95, with comparative timing and memory use shown in the
 following table.
 
-% latex table generated in R 3.2.3 by xtable 1.8-0 package
-% Sun Jan 31 20:47:49 2016
+% latex table generated in R 3.2.2 by xtable 1.8-2 package
+% Wed Mar  2 12:56:08 2016
 \begin{table}[ht]
 \centering
-{\small
+\begingroup\small
 \begin{tabular}{lrr}
   \hline
 Method & Wall clock time (s) & Peak excess memory use (MB) \\ 
@@ -567,7 +578,7 @@ tcor & 3.13 & 59.60 \\
   brute force & 1.75 & 1075.10 \\ 
    \hline
 \end{tabular}
-}
+\endgroup
 \caption{Gene expression results, threshold=0.95} 
 \label{EisenYeast}
 \end{table}
@@ -578,8 +589,8 @@ tcor & 3.13 & 59.60 \\
 Performance benefits from the {\tt tcor()} function become apparent with more
 data.  The following example uses calculated beta values from the Illumina
 Human Methylation450 BeadChip of 80 Adenoid Cystic Carcinoma (ACC) tumor
-samples obtained from the Broad GDAC Cancer Genome Atlas dashboard \citep{gdac}.
-See the \proglang{R} package implementation \citep{sup} for examples of
+samples obtained from the Broad GDAC Cancer Genome Atlas dashboard \cite{gdac}.
+See the \proglang{R} package implementation \cite{sup} for examples of
 efficiently converting the downloaded sample methylation data into an R matrix.
 We chose these data for their public availability as a general example of
 computing thresholded correlation among large numbers of vectors,
@@ -613,9 +624,9 @@ computer) and 64$\,$GB/1,600$\,$MHz ECC registered RAM running CentOS 6.6 and
 64-bit \proglang{R} version 3.2.2 with the reference \proglang{R} BLAS library.
 
 No code change was required to run in parallel on the cluster. The reference \proglang{R}
-{\tt tcor()} implementation uses \proglang{R}'s {\tt foreach} \citep{foreach} framework to
+{\tt tcor()} implementation uses \proglang{R}'s {\tt foreach} \cite{foreach} framework to
 run on arbitrary parallel configurations (``back ends''). We simply registered
-a {\tt doRedis} \citep{doredis} parallel back end with 16 \proglang{R} workers per computer
+a {\tt doRedis} \cite{doredis} parallel back end with 16 \proglang{R} workers per computer
 (64 total \proglang{R} worker processes) prior to invoking {\tt tcor()}.
 
 The results computed on the Linux cluster are marked ``tcor (64 core cluster)''
@@ -626,11 +637,11 @@ remote \proglang{R} process requires access to a copy of the data matrix $A$. Mo
 adaptations of the algorithm are possible and could, for example, share the
 memory required by $A$ between worker \proglang{R} processes on each computer.
 
-% latex table generated in R 3.2.3 by xtable 1.8-0 package
-% Sun Jan 31 20:47:49 2016
+% latex table generated in R 3.2.2 by xtable 1.8-2 package
+% Wed Mar  2 12:56:08 2016
 \begin{table}[ht]
 \centering
-{\small
+\begingroup\small
 \begin{tabular}{lrrl}
   \hline
 Method & Wall clock time (s) & Memory use (MB) &   \\ 
@@ -640,7 +651,7 @@ tcor (4 core PC) & 10309.00 & 389.10 &  \\
    &  & 42282.40 & (remote) \\ 
    \hline
 \end{tabular}
-}
+\endgroup
 \caption{TCGA ACC Methylation450 (80 rows x 394,014 columns, threshold=0.99). Linux cluster results include master R process memory use (local) plus total peak memory used by all 64 worker R processes (remote).} 
 \label{TCGA3}
 \end{table}From a set of almost 80 billion pairs of vectors, Algorithm \ref{prune} finds 913,601
@@ -654,18 +665,18 @@ the constrained memory setting of a desktop PC without modification.
 
 The idea of evaluating threshold conditions by projection into low dimensional
 subspaces applies to distance metrics similarly to correlation, see
-\citep{svd-similarity} for a related approach. Lemma \ref{sumlemma} decomposes
+\cite{svd-similarity} for a related approach. Lemma \ref{sumlemma} decomposes
 Euclidean distance between two vectors in terms of singular basis vectors and
 Algorithm \ref{prune} can be applied directly to the problem of finding all
 pairs of vectors that meet a thresholded Euclidean distance with small changes
 in steps 3, 4, and 7.  By equivalence of norms, thresholded Euclidean distance
 can be extended to other distance metrics. The reference \proglang{R}
-implementation \citep{sup} includes functions for thresholded distance and
+implementation \cite{sup} includes functions for thresholded distance and
 correlation.
 
 The ideas presented here can be adapted to efficiently find the top N most
 correlated vector pairs for a given constant N similarly to the work of
-Xiong et al. \citep{prune2}.
+Xiong et al. \cite{prune2}.
 
 \section{Conclusion}\label{conclusion}
 
