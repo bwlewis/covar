@@ -1,5 +1,5 @@
 ---
-title: "Pairwise-complete correlation considered dangerous"
+title: "Pairwise-complete correlation: caution advised"
 author: "B. W. Lewis"
 date: "5/25/2015"
 output: html_document
