@@ -568,7 +568,7 @@ threshold of 0.95, with comparative timing and memory use shown in the
 following table.
 
 % latex table generated in R 3.2.2 by xtable 1.8-2 package
-% Wed Mar  2 13:07:43 2016
+% Sat Sep  3 20:12:12 2016
 \begin{table}[ht]
 \centering
 \begingroup\small
@@ -640,7 +640,7 @@ adaptations of the algorithm are possible and could, for example, share the
 memory required by $A$ between worker \proglang{R} processes on each computer.
 
 % latex table generated in R 3.2.2 by xtable 1.8-2 package
-% Wed Mar  2 13:07:43 2016
+% Sat Sep  3 20:12:12 2016
 \begin{table}[ht]
 \centering
 \begingroup\small
@@ -663,7 +663,62 @@ the constrained memory setting of a desktop PC without modification.
 
 
 
-\section{Extensions}\label{extensions}
+\section{Practical extensions}\label{extensions}
+
+This section presents a number of practical extensions to the main thresholded
+correlation idea, most of which are available in the reference R package
+implementation. Extensions include finding anti-correlated vectors, finding
+thresholded correlations between column vectors from two different matrices,
+and application to other distance metrics in place of correlation. All of the
+discussed extensions are simple to implement.
+
+
+\subsection{Anti-correlation}
+
+Some applications are interested in finding both highly correlated and
+anti-correlated vectors--that is, for a given threshold $t > 0$, find column
+vectors $a_i$ and $a_j$ such that $|\mbox{cor}(a_i, a_j)| \ge t$.
+Note that $-\mbox{cor}(a_i, a_j) = \mbox{cor}(a_i, -a_j)$, and that
+similarly to Lemma \ref{sumlemma},
+\begin{equation*}
+\|a_i + a_j\|^2 =
+\sigma_1^2 (e_i^Tv_{1} + e_j^Tv_{1})^2 + 
+\sigma_2^2 (e_i^Tv_{2} + e_j^Tv_{2})^2 + \cdots + 
+\sigma_k^2 (e_i^Tv_{k} + e_j^Tv_{k})^2,
+\end{equation*}
+where $e_j, v_j, \sigma_j$ are defined as in Lemma \ref{sumlemma}.
+Then steps 2--4 of Algorithm \ref{prune} can be modified to include vector pairs meeting an
+anti-correlation threshold as follows:
+\begin{enumerate}
+\item[2.] Let $\hat{v}_1\in\mathcal{R}^{2n}=[v_1; -v_1]$ (concatenate the vectors). Compute permutation
+$P$ that orders points in $\hat{v}_1$.
+\item[3.] Compute $\ell$, the longest run of successive points in $P \hat{v}_1$ within the interval $\sqrt{2(1-t)}/\sigma_1$. If $\ell > n-1$, then set $\ell = n-1$.
+\item[4.] Compute a set of candidate index pairs $(\tilde{j},\tilde{j}+\tilde{i})$ with respect to the index order defined by the permutation $P$ that possibly meet the correlation threshold
+\[
+\bigcup_{\tilde{i}=1}^\ell
+\left\{
+(\tilde{j},\tilde{j}+\tilde{i}) :
+\begin{array}{l}
+e_{\tilde{j}}^T(D^{\tilde{i}} P V_{1:p} )^2 s_{1:p}^2 \le 2(1-t) \mbox{ or }
+\\
+e_{\tilde{j}}^T(|D^{\tilde{i}}| P V_{1:p} )^2 s_{1:p}^2 \le 2(1-t)
+\end{array}
+\right\},
+\]
+where $\tilde{j}=1,2,\ldots,n-\tilde{i}$, and $|D^{\tilde{i}}|$ indicates the entry-wise
+absolute value of the matrix $D^{\tilde{i}}$.
+\end{enumerate}
+The modified step 3 produces a run length $\ell$ very likely to be larger than
+in the default case, and step 4 above requires more arithmetic. Thus, including
+anti-correlated vectors in the result is more expensive than simply finding
+only highly correlated vectors.
+
+\subsection{Thresholded correlation of columns between two different matrices}
+
+Arbitrary vectors
+
+
+\subsection{Alternative metrics}
 
 The idea of evaluating threshold conditions by projection into low dimensional
 subspaces applies to distance metrics similarly to correlation, see
@@ -679,6 +734,7 @@ correlation.
 The ideas presented here can be adapted to efficiently find the top N most
 correlated vector pairs for a given constant N similarly to the work of
 Xiong et al. \cite{prune2}.
+
 
 \section{Conclusion}\label{conclusion}
 
