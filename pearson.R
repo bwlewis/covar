@@ -1,7 +1,7 @@
 # Example efficient Pearson's sample correlation matrix computation
 #
 # You should have R linked against a high-performance BLAS library for best
-# results. See XXX
+# results. See http://illposed.net/r-on-linux.html
 
 #' @param x input m by n data matrix
 #' @result n x n symmetric Pearson's sample correlation matrix
