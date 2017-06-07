@@ -6,6 +6,11 @@
 #' @param x input m by n data matrix
 #' @result n x n symmetric Pearson's sample correlation matrix
 #' @notes compare with cor(x, method="pearson")
+#' @examples
+#' x = matrix(rnorm(20), nrow=5, ncol=4)
+#' cor(x)
+#' pearson(x)
+#'
 pearson = function(x)
 {
   m = nrow(x)
