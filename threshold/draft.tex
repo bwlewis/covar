@@ -459,12 +459,9 @@ in the default case, and step 4 above requires more arithmetic. Thus, including
 anti-correlated vectors in the result is more expensive than simply finding
 only highly correlated vectors.
 
-\subsection{Thresholded correlation of columns between two different matrices}
+\subsection{Spearman correlation}
 
-WRITE ME
-
-\subsection{Alternative metrics}
-
+TODO: WRITE THIS
 The idea of evaluating threshold conditions by projection into low dimensional
 subspaces applies to distance metrics similarly to correlation, see
 \cite{svd-similarity} for a related approach. Lemma \ref{sumlemma} decomposes
@@ -476,10 +473,13 @@ can be extended to other distance metrics. The reference \proglang{R}
 implementation \cite{sup} includes functions for thresholded distance and
 correlation.
 
+\subsection{Most correlated pairs}
+
+TODO: WRITE THIS
+
 The ideas presented here can be adapted to efficiently find the top N most
 correlated vector pairs for a given constant N similarly to the work of
 Xiong et al. \cite{prune2}.
-
 
 \section{General matrices and fast truncated SVD}\label{irlba}
 
@@ -573,7 +573,6 @@ We compare the {\tt tcor()} function with brute-force Pearson correlation
 matrix computation computed in the fastest way we can, directly using matrix
 multiplication instead of using the more general {\tt cor()} function.
 
-
 \subsection{Small gene expression example}
 
 The first example is a small proof of concept that provides the data for Figure
@@ -643,7 +642,7 @@ threshold of 0.95, with comparative timing and memory use shown in the
 following table.
 
 % latex table generated in R 3.4.1 by xtable 1.8-2 package
-% Thu Aug 10 12:49:00 2017
+% Thu Aug 10 15:41:27 2017
 \begin{table}[ht]
 \centering
 \begingroup\small
@@ -659,7 +658,6 @@ tcor & 3.13 & 59.60 \\
 \caption{Gene expression results, threshold=0.95} 
 \label{EisenYeast}
 \end{table}
-
 
 \subsection{TCGA DNA methylation example}
 
@@ -715,7 +713,7 @@ adaptations of the algorithm are possible and could, for example, share the
 memory required by $A$ between worker \proglang{R} processes on each computer.
 
 % latex table generated in R 3.4.1 by xtable 1.8-2 package
-% Thu Aug 10 12:49:00 2017
+% Thu Aug 10 15:41:27 2017
 \begin{table}[ht]
 \centering
 \begingroup\small
@@ -736,9 +734,6 @@ pairs with correlation values of 0.99 or more on a modest Linux
 cluster in about 8 minutes. The same algorithm works, more slowly, in
 the constrained memory setting of a desktop PC without modification.
 
-
-
-
 \section{Conclusion}\label{conclusion}
 
 We present a simple algorithm and reference \proglang{R} implementation based
@@ -749,9 +744,7 @@ computational and memory savings, and illustrate these savings with a few
 genomics data experiments.  The main computational work in the algorithm is
 easily parallelized and deployed across computational clusters.
 
-
 \bibliography{bibliography}{}
 \bibliographystyle{plain}
-
 
 \end{document}
