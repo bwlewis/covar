@@ -88,17 +88,19 @@ Paradigm4, Inc.
 
 %\Abstract{
 \begin{document}
+\SweaveOpts{concordance=TRUE}
 \maketitle
 \begin{abstract}
-Efficiently computing a subset of a correlation matrix consisting of values
-above a specified threshold is important to many practical applications.
-Real-world problems in genomics, machine learning, finance other applications
-can produce correlation matrices too large to explicitly form and tractably
-compute. Often, only values corresponding to highly-correlated vectors are of
-interest, and those values typically make up a small fraction of the overall
-correlation matrix. We present a method based on the singular value
-decomposition (SVD) and its relationship to the data covariance structure that
-can efficiently compute thresholded subsets of very large correlation matrices.
+Efficiently computing a subset of a correlation matrix consisting of values above 
+a specified threshold is important to many practical applications of large-scale 
+statistics and machine learning. Real-world problems in genomics, machine 
+learning, finance, and others can produce correlation matrices too large to 
+explicitly form and to tractably compute. However, in most applications, only 
+values corresponding to highly-correlated (or anti-correlated) vectors are of 
+interest, and those corresponding values typically make up a small fraction of 
+the overall correlation matrix. For this situation, we present a method based on 
+the singular value decomposition (SVD) and its relationship to the data 
+covariance structure for efficiently computing thresholded subsets of very large correlation matrices.
 \end{abstract}
 %\Keywords{thresholded correlation, SVD, \proglang{R}}
 %\Plainkeywords{thresholded correlation, SVD, R}
@@ -133,35 +135,36 @@ can efficiently compute thresholded subsets of very large correlation matrices.
 
 \section{Introduction}\label{intro}
 
-Finding highly-correlated pairs among a large set of vectors is an important
-part of many applications. For instance, subsets of highly-correlated vectors
-of gene expression values may be used in the discovery of networks of genes
-relevant to particular biological processes \cite{genomics}.  Identification of
-highly-correlated pairs may be used in feature selection algorithms for machine
-learning applications \cite{ml1, ml2} and are important to time series and
+Finding highly-correlated pairs among a large set of vectors is an important part 
+of many statistics and machine learning applications. For instance, subsets of 
+highly-correlated vectors of gene expression values may be used in the discovery 
+of networks of genes relevant to particular biological processes \cite{genomics}. 
+Identification of highly-correlated pairs may be used in feature selection 
+algorithms for model fitting \cite{ml1, ml2} and are important to time series and 
 image processing applications \cite{timeseries, svd-similarity}.
 
-The number of correlation coefficients grows quadratically with the number of
-vectors. Simply computing all pairs of correlation coefficients and then
-filtering out coefficients below a given threshold may not be computationally
-feasible for high-dimensional data in modern genomics and other applications.
-Considerable attention has been devoted to \emph{pruning methods} that cheaply
-prune away all but the most highly-correlated pairs of vectors.  For example
-the TAPER and related algorithms of Xiong et al. develop pruning rules based on
-the frequency of mutually co-occurring observations (rows) among vector pairs;
-see \cite{prune1, prune2} and the references therein.  Related methods
-approximate a set containing the most highly-correlated pairs using hashing
-algorithms \cite{prune3}. A number of other methods arrive at approximate sets
-of the most highly-correlated pairs using dimensionality-reduction techniques
-like the discrete Fourier transform \cite{timeseries}. The method of Wu, et al.
-\cite{svd-similarity}, conceptually very similar to our approach, uses the
-singular value decomposition (SVD) to find all pairs of close vectors with
-respect to a distance metric (instead of correlation). Hero and
-Rajaratnam\cite{hero2011large} apply projections to the thresholded correlation
-problem with the additional objective of determining a reasonable threshold
-value; their method follows a probabilistic approach.  Our method finds all of
-the most highly-correlated vector pairs with respect to a given threshold by
-pruning along an intuitive path of decreasing variance defined by the data and
+Because the number of correlation coefficients grows quadratically with the 
+number of vectors, simply computing all pairs of correlation coefficients and 
+then filtering out coefficients below a given threshold may not be 
+computationally feasible for large-scale data applications. As a result, 
+considerable attention has been devoted to \emph{pruning methods} that cheaply 
+prune away all but the most highly-correlated pairs of vectors.  For example the 
+TAPER and related algorithms of Xiong et al. develop pruning rules based on the 
+frequency of mutually co-occurring observations (rows) among vector pairs; see 
+\cite{prune1, prune2} and the references therein.  Related methods approximate a 
+set containing the most highly-correlated pairs using hashing algorithms 
+\cite{prune3}. Other methods arrive at approximate sets of the most 
+highly-correlated pairs using dimensionality-reduction techniques like the 
+discrete Fourier transform \cite{timeseries}. 
+
+The method of Wu, et al. \cite{svd-similarity}, conceptually very similar to our 
+approach, uses the singular value decomposition (SVD) to find all pairs of close 
+vectors with respect to a distance metric (instead of correlation). Similarly, 
+Hero and Rajaratnam\cite{hero2011large} apply projections to the thresholded 
+correlation problem with the additional objective of determining a reasonable 
+threshold value; their method follows a probabilistic approach.  Our method finds 
+all of the most highly-correlated vector pairs with respect to a given threshold 
+by pruning along an intuitive path of decreasing variance defined by the data and
 computed by a truncated SVD.
 
 Consider a real-valued data matrix $A$ consisting of $m$ observations of $n$
@@ -272,7 +275,7 @@ In practice, many pairs of vectors may be pruned in this fashion by
 inspecting distances in low-dimensional subspaces, substantially reducing the
 complexity of computing thresholded correlation matrices.
 
-\section{Efficient pruning using truncated SVD}
+\section{Efficient pruning using truncated SVD} \label{sect:algo}
 
 Let $t$ be a given correlation threshold, $0<t<1$, and let
 $P\in\mathcal{R}^{n\times n}$ be a permutation matrix that orders the entries
@@ -418,29 +421,101 @@ Fortunately the $\ell$ evaluations in step 4 are independent of each other and
 can easily be computed in parallel. See the reference \proglang{R}
 implementation \cite{sup} for an example.
 
+\section{Extensions}\label{extensions}
+
+This section presents a number of practical extensions to the main thresholded
+correlation idea, most of which are available in the reference R package
+implementation. Extensions include finding anti-correlated vectors, finding
+thresholded correlations between column vectors from two different matrices,
+and application to other distance metrics in place of correlation. All of the
+discussed extensions are simple to implement.
+
+\subsection{Anti-correlation}
+
+Some applications are interested in finding both highly correlated and
+anti-correlated vectors--that is, for a given threshold $t > 0$, find column
+vectors $a_i$ and $a_j$ such that $|\mbox{cor}(a_i, a_j)| \ge t$.
+Note that $-\mbox{cor}(a_i, a_j) = \mbox{cor}(a_i, -a_j)$, and that
+similarly to Lemma \ref{sumlemma},
+\begin{equation*}
+\|a_i + a_j\|^2 =
+\sigma_1^2 (e_i^Tv_{1} + e_j^Tv_{1})^2 + 
+\sigma_2^2 (e_i^Tv_{2} + e_j^Tv_{2})^2 + \cdots + 
+\sigma_k^2 (e_i^Tv_{k} + e_j^Tv_{k})^2,
+\end{equation*}
+where $e_j, v_j, \sigma_j$ are defined as in Lemma \ref{sumlemma}.
+Then steps 2--4 of Algorithm \ref{prune} can be modified to include vector pairs meeting an
+anti-correlation threshold as follows:
+\begin{enumerate}
+\item[2.] Let $\hat{v}_1\in\mathcal{R}^{2n}=[v_1; -v_1]$ (concatenate the vectors). Compute permutation
+$P$ that orders points in $\hat{v}_1$.
+\item[3.] Compute $\ell$, the longest run of successive points in $P \hat{v}_1$ within the interval $\sqrt{2(1-t)}/\sigma_1$. If $\ell > n-1$, then set $\ell = n-1$.
+\item[4.] Compute a set of candidate index pairs $(\tilde{j},\tilde{j}+\tilde{i})$ with respect to the index order defined by the permutation $P$ that possibly meet the correlation threshold
+\[
+\bigcup_{\tilde{i}=1}^\ell
+\left\{
+(\tilde{j},\tilde{j}+\tilde{i}) :
+\begin{array}{l}
+e_{\tilde{j}}^T(D^{\tilde{i}} P V_{1:p} )^2 s_{1:p}^2 \le 2(1-t) \mbox{ or }
+\\
+e_{\tilde{j}}^T(|D^{\tilde{i}}| P V_{1:p} )^2 s_{1:p}^2 \le 2(1-t)
+\end{array}
+\right\},
+\]
+where $\tilde{j}=1,2,\ldots,n-\tilde{i}$, and $|D^{\tilde{i}}|$ indicates the entry-wise
+absolute value of the matrix $D^{\tilde{i}}$.
+\end{enumerate}
+The modified step 3 produces a run length $\ell$ very likely to be larger than
+in the default case, and step 4 above requires more arithmetic. Thus, including
+anti-correlated vectors in the result is more expensive than simply finding
+only highly correlated vectors.
+
+\subsection{Spearman correlation}
+
+TODO: WRITE THIS
+The idea of evaluating threshold conditions by projection into low dimensional
+subspaces applies to distance metrics similarly to correlation, see
+\cite{svd-similarity} for a related approach. Lemma \ref{sumlemma} decomposes
+Euclidean distance between two vectors in terms of singular basis vectors and
+Algorithm \ref{prune} can be applied directly to the problem of finding all
+pairs of vectors that meet a thresholded Euclidean distance with small changes
+in steps 3, 4, and 7.  By equivalence of norms, thresholded Euclidean distance
+can be extended to other distance metrics. The reference \proglang{R}
+implementation \cite{sup} includes functions for thresholded distance and
+correlation.
+
+\subsection{Most correlated pairs}
+
+TODO: WRITE THIS
+
+The ideas presented here can be adapted to efficiently find the top N most
+correlated vector pairs for a given constant N similarly to the work of
+Xiong et al. \cite{prune2}.
 
 \section{General matrices and fast truncated SVD}\label{irlba}
 
-We have so far assumed that the mean of each column vector of the $m\times n$
-matrix $A$ is zero and the columns are scaled to have unit norm, but we really
-want a method that works with general matrices $A$.  We also want a way to
-efficiently compute a relatively low-rank truncated SVD of potentially large
-matrices required by step 1 of Algorithm \ref{prune}.  And the truncated SVD
-method should be able to cheaply restart to compute additional singular vectors
-as required in step 5 of Algorithm \ref{prune}. Fortunately all desires are met
-by one algorithm.
+For Algorithm \ref{prune} to be used in practice, three challenges need to be 
+addressed. First, the algorithm requires an efficient method for computing a 
+relatively low-rank truncated SVD of potentially large matrices required by step 
+1. Second, the truncated SVD method should be able to cheaply restart to compute 
+additional singular vectors as required in step 5 of Algorithm \ref{prune}. 
+Third, while the algorithm assumes a standardized matrix, it should work for 
+general matrices. Fortunately, each of these challenges is met with a single 
+algorithm.
 
-The augmented implicitly restarted Lanczos bidiagonalization algorithm\break(IRLBA)
-of Baglama and Reichel \cite{irlba} efficiently computes truncated singular value
-decompositions of large dense or sparse matrices. Reference implementations are
-available for \proglang{R} \cite{irlbar}, \proglang{Matlab} \cite{irlbam},
-and \proglang{Python} \cite{irlbap}.
+The first two challenges are addressed directly by the augmented implicitly 
+restarted Lanczos bidiagonalization algorithm\break(IRLBA) of Baglama and Reichel 
+\cite{irlba}. It efficiently computes truncated singular value decompositions of 
+either large dense or sparse matrices and the result from the $k$ rank approximati
+on can be efficiently used to create an approximation with higher rank. Reference 
+implementations are available for \proglang{R} \cite{irlbar}, \proglang{Matlab} 
+\cite{irlbam}, and \proglang{Python} \cite{irlbap}.
 
-We can relax the column mean and scale assumptions without introducing much
-additional computational or storage overhead as follows. Assume $A$ is an
-$m\times n$ real-valued matrix without any constant-valued columns. Let
-$z=[z_1,z_2,\ldots,z_n]\in\mathcal{R}^n$ represent the vector of column means
-of $A$, $w=[w_1^2,w_2^2,\ldots,w_n^2]\in\mathcal{R}^n$
+The third challenge is addressed by relaxing the column mean and scale 
+assumptions without introducing significant additional computational or storage
+overhead as follows. Assume $A$ is an $m\times n$ real-valued matrix without any 
+constant-valued columns. Let $z=[z_1,z_2,\ldots,z_n]\in\mathcal{R}^n$ represent 
+the vector of column means of $A$, $w=[w_1^2,w_2^2,\ldots,w_n^2]\in\mathcal{R}^n$
 be the vector of squared column norms of $A$, and $W\in\mathcal{R}^{n\times n}$
 a diagonal matrix with diagonal entries $1/\sqrt{w_i^2 - m z_i^2}$.  Let
 $e\in\mathcal{R}^m$ be a vector of all ones.  Then $(A - ez^T)W$ is a centered
@@ -448,14 +523,17 @@ matrix with zero column means and scaled to have unit column norms, and
 \[
 \mathrm{cor}(A) = W^T (A-ez^T)^T (A-ez^T) W.
 \]
-The IRLBA, based on the Lanczos process, is a method of iterated matrix-vector
-products. The main idea behind efficient application of IRLB to correlation
-problems replaces matrix-vector products of the form $Ax$ with $AWx - ez^TWx$ in
-the iterations, implicitly working with a scaled and centered matrix without
-forming it.  This comes at the cost of storing two additional length $n$ vectors and
+%The IRLBA, based on the Lanczos process, is a method of iterated matrix-vector
+%products. The main idea behind efficient application of IRLB to correlation
+%problems replaces 
+Matrix-vector products of the form $Ax$ with $AWx - ez^TWx$ may be used in
+the iterations of the algrithm, implicitly working with a scaled and 
+centered matrix without explicit standardization. This comes at the cost 
+of storing two additional length $n$ vectors and
 at most computing two additional vector inner products per matrix-vector product.
-The \proglang{R} implementation \cite{irlbar} of IRLBA includes arguments for centering and
-scaling the input matrix.
+The \proglang{R} implementation \cite{irlbar} of IRLBA includes arguments for centering and scaling the input matrix.
+
+\section{Numerical experiments}\label{examples}
 
 A na\"ive brute force thresholded correlation computation requires $O(n^2 m)$ flops.
 Let $p$ be the selected IRLBA dimension. Then Algorithm \ref{prune} requires
@@ -468,9 +546,6 @@ threshold value. We remark that this estimate of computational savings is
 available already in step 3 of Algorithm \ref{prune} after only modest
 computational effort. Users might use this cheap estimate to, for example,
 alter their threshold in some cases.
-
-
-\section{Numerical experiments}\label{examples}
 
 We evaluated the algorithm using public gene expression and DNA methylation
 datasets from the \proglang{R} {\tt biclust} \cite{biclust} package and from
@@ -506,7 +581,6 @@ from optimized BLAS routines, but not as much, as it mostly makes use of Level
 We compare the {\tt tcor()} function with brute-force Pearson correlation
 matrix computation computed in the fastest way we can, directly using matrix
 multiplication instead of using the more general {\tt cor()} function.
-
 
 \subsection{Small gene expression example}
 
@@ -584,7 +658,6 @@ print(
         caption = "Gene expression results, threshold=0.95", label = "EisenYeast", caption.placement = "top")
   ,size="small", table.placement="ht", include.rownames=FALSE)
 @
-
 
 
 \subsection{TCGA DNA methylation example}
@@ -706,6 +779,7 @@ pairs with correlation values of 0.99 or more on a modest Linux
 cluster in about 8 minutes. The same algorithm works, more slowly, in
 the constrained memory setting of a desktop PC without modification.
 
+<<<<<<< HEAD
 
 
 \section{Practical extensions}\label{extensions}
@@ -781,6 +855,8 @@ correlated vector pairs for a given constant N similarly to the work of
 Xiong et al. \cite{prune2}.
 
 
+=======
+>>>>>>> 9bc6921b14486b149173e58b412cad2a2b3fcf70
 \section{Conclusion}\label{conclusion}
 
 We present a simple algorithm and reference \proglang{R} implementation based
@@ -791,9 +867,7 @@ computational and memory savings, and illustrate these savings with a few
 genomics data experiments.  The main computational work in the algorithm is
 easily parallelized and deployed across computational clusters.
 
-
 \bibliography{bibliography}{}
 \bibliographystyle{plain}
-
 
 \end{document}
