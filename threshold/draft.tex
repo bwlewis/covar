@@ -400,7 +400,7 @@ a low-rank truncated SVD of potentially large sparse or dense matrices.
 compute additional singular vectors as needed by step 5 of Algorithm
 \ref{prune}.
 \item Algorithm \ref{prune} as stated assumes a standardized matrix;
-it needs to be extended to efficiently apply to general matrices.
+it needs to be extended to general matrices.
 \end{enumerate}
 %For Algorithm \ref{prune} to be used in practice, three challenges need to be 
 %addressed. First, the algorithm requires an efficient method for computing a 
@@ -414,7 +414,7 @@ it needs to be extended to efficiently apply to general matrices.
 The first two challenges are addressed directly by the augmented implicitly
 restarted Lanczos bidiagonalization algorithm (IRLBA) of Baglama and Reichel
 \cite{irlba}. It efficiently computes truncated singular value decompositions
-of either large dense or sparse matrices and the result from an existing rank
+of either large dense or sparse matrices. And, the result from an existing rank
 $k$ approximation can be efficiently extended to higher-rank approximations by
 restarting.  Reference implementations are available for \proglang{R}
 \cite{irlbar}, \proglang{Matlab} \cite{irlbam}, and \proglang{Python}
@@ -541,7 +541,7 @@ pairs consisting of column vectors from each original matrix.
 
 A procedure that finds the top $N$ most correlated pairs for a fixed integer
 $N$ proceeds iteratively starting with a small initial value of $p$, for
-instance $p = 0.999$.  Recall that the maximum number of pairs meeting a
+instance $p = 0.999$.  The maximum number of pairs meeting a
 threshold is available by step 4 of Algorithm \ref{prune}.  Then:
 
 \begin{enumerate}
@@ -551,7 +551,7 @@ the maximum number of pairs meething the threshold $p$ is greater than $N$.
 pairs meeting the threshold is less than $N$, reduce $p$ and goto step a.
 \end{enumerate}
 
-The procedure then relies on the ability to cheaply restart IRLBA to expand an
+The procedure relies on the ability to cheaply restart IRLBA to expand an
 existing truncated SVD.
 
 
@@ -575,7 +575,7 @@ installed from the development GitHub repository using the
 
 \begin{Schunk}
 \begin{Sinput}
-> devtools::install_github("bwlewis/tcor")
+devtools::install_github("bwlewis/tcor")
 \end{Sinput}
 \end{Schunk}
 
@@ -624,16 +624,15 @@ threshold = 0.95
 library(tcor)
 library(doMC)     # local parallel computation
 library(biclust)  # for the BicatYeast data
-data(EisenYeast)  # in gene by sample orientation
-A = t(EisenYeast) # to correlate genes to genes
-# Register a four-core multicore parallel backend
-registerDoMC(4)
+data(EisenYeast)
+A = t(EisenYeast) # (to correlate genes to genes)
+registerDoMC(4)   # register a four-core multicore parallel backend
 
 # Compute using tcor():
 m1  = sum(gc()[, 2])  # Memory in megabytes currently in use
 t1  = proc.time()
 tx  = tcor(A, t=threshold, p=10)
-t1  = (proc.time() - t1)[3] # Time in seconds
+t1  = (proc.time() - t1)[3]  # Time in seconds
 m1  = sum(gc()[, 6]) - m1    # Peak excess memory use during the test
 
 # Fast brute force full correlation:
@@ -643,7 +642,7 @@ mu = colMeans(A)
 s  = sqrt(apply(A, 2, crossprod) - nrow(A) * mu ^ 2)
 cs = scale(A, center=mu, scale=s)  # scale and center the data
 cx = crossprod(cs)                 # full correlation matrix
-cx  = cx * upper.tri(cx)    # ignore symmetry and diagonal
+cx  = cx * upper.tri(cx)           # ignore symmetry and diagonal
 pairs = which(cx >= threshold, arr.ind=TRUE)
 t2  = (proc.time() - t2)[3]
 m2  = sum(gc()[, 6]) - m2
@@ -713,19 +712,21 @@ contained two Intel Xeon E5-2650 2$\,$GHz CPUs (16 physical CPU cores per
 computer) and 64$\,$GB/1,600$\,$MHz ECC registered RAM running CentOS 6.6 and
 64-bit \proglang{R} version 3.2.2 with the reference \proglang{R} BLAS library.
 
-No code change was required to run in parallel on the cluster. The reference \proglang{R}
-{\tt tcor()} implementation uses \proglang{R}'s {\tt foreach} \cite{foreach} framework to
-run on arbitrary parallel configurations (``back ends''). We simply registered
-a {\tt doRedis} \cite{doredis} parallel back end with 16 \proglang{R} workers per computer
-(64 total \proglang{R} worker processes) prior to invoking {\tt tcor()}.
+No code change was required to run in parallel on the cluster. The reference
+\proglang{R} {\tt tcor()} implementation uses \proglang{R}'s {\tt foreach}
+\cite{foreach} framework to run on arbitrary parallel configurations (``back
+ends''). We simply registered a {\tt doRedis} \cite{doredis} parallel back end
+with 16 \proglang{R} workers per computer (64 total \proglang{R} worker
+processes) prior to invoking {\tt tcor()}.
 
 The results computed on the Linux cluster are marked ``tcor (64 core cluster)''
 below. The cluster example computed the filtering step 7 of Algorithm
-\ref{prune} in parallel across the 64 remote \proglang{R} processes. That approach incurs,
-in this example, an additional memory overhead of about 16$\,$GB because each
-remote \proglang{R} process requires access to a copy of the data matrix $A$. More thrifty
-adaptations of the algorithm are possible and could, for example, share the
-memory required by $A$ between worker \proglang{R} processes on each computer.
+\ref{prune} in parallel across the 64 remote \proglang{R} processes. That
+approach incurs, in this example, an additional memory overhead because each
+remote \proglang{R} process requires access to a copy of the data matrix $A$.
+More thrifty adaptations of the algorithm are possible and could, for example,
+share the memory required by $A$ between worker \proglang{R} processes on each
+computer.
 
 % latex table generated in R 3.4.0 by xtable 1.8-2 package
 % Sat Aug 12 09:35:32 2017
